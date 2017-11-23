@@ -8,13 +8,13 @@ Model
     * Team
       * Car
         
-  ###Race
+  ### Race
   Details on which 'map' should be displayed in the GUI
   
-  ###Team
+  ### Team
   Which teams are participating in this race?
   
-  ###Car
+  ### Car
   The car / driver, which will include things like current speed, fuel remaining, position on track, laps completed, etc. This is the main bulk of the realtime stuff.
   
   
