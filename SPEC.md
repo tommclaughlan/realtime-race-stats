@@ -9,7 +9,7 @@ Model
       * Car
         
   ### Race
-  Details on which 'map' should be displayed in the GUI
+  Details on which 'map' should be displayed in the GUI, leaderboard, start time?
   
   ### Team
   Which teams are participating in this race?
