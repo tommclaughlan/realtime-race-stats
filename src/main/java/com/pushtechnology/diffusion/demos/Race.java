@@ -6,8 +6,10 @@ import java.util.List;
 
 public class Race {
     private final ArrayList<Team> teams;
+    private final String trackFilename;
 
-    public Race(ArrayList<Team> teams) {
+    public Race(String trackFileName, ArrayList<Team> teams) {
+        this.trackFilename = trackFileName;
         this.teams = teams;
     }
 
@@ -17,6 +19,10 @@ public class Race {
 
     public int getTeamCount() {
         return teams.size();
+    }
+
+    public String getTrackFilename() {
+        return trackFilename;
     }
 
     public static class Team {
