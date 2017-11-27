@@ -5,9 +5,9 @@ import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import static spark.Spark.externalStaticFileLocation;
 import static spark.Spark.init;
 import static spark.Spark.port;
-import static spark.Spark.staticFiles;
 
 /**
  * Main class to handle initialisation and stuff.
@@ -37,7 +37,7 @@ public class Main
 
     private static void startWebServer() {
         port(3142);
-        staticFiles.location("/html");
+        externalStaticFileLocation("src/main/resources/html");
         init();
     }
 
