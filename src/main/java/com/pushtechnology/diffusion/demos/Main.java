@@ -3,6 +3,7 @@ package com.pushtechnology.diffusion.demos;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Properties;
 
 import static spark.Spark.externalStaticFileLocation;
@@ -39,6 +40,25 @@ public class Main
         port(3142);
         externalStaticFileLocation("src/main/resources/html");
         init();
+    }
+
+    private static class Car {
+        public Car() {
+        }
+    }
+
+    private static class Team {
+        private final HashSet<Car> cars = new HashSet<>();
+
+        public Team() {
+        }
+    }
+
+    private static class Race {
+        private final HashSet<Team> teams = new HashSet<>();
+
+        public Race() {
+        }
     }
 
     private static class RaceProperties {
