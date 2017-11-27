@@ -1,11 +1,25 @@
 package com.pushtechnology.diffusion.demos;
 
+import com.pushtechnology.diffusion.client.Diffusion;
+import com.pushtechnology.diffusion.client.features.TimeSeries;
+import com.pushtechnology.diffusion.client.features.control.topics.TopicControl;
+import com.pushtechnology.diffusion.client.features.control.topics.TopicUpdateControl;
+import com.pushtechnology.diffusion.client.session.Session;
+import com.pushtechnology.diffusion.client.topics.details.TopicSpecification;
+import com.pushtechnology.diffusion.client.topics.details.TopicType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import static com.pushtechnology.diffusion.client.features.control.topics.TopicUpdateControl.*;
+import static com.pushtechnology.diffusion.client.features.control.topics.TopicUpdateControl.Updater.*;
+import static com.pushtechnology.diffusion.datatype.DataTypes.INT64_DATATYPE_NAME;
 import static spark.Spark.externalStaticFileLocation;
 import static spark.Spark.init;
 import static spark.Spark.port;
@@ -23,6 +37,7 @@ public class Main
         if ( properties == null ) {
             System.out.println("ERROR: No properties loaded!");
             System.exit(42);
+            return;
         }
 
         // Create the initial race snapshot
@@ -36,16 +51,82 @@ public class Main
         } catch (IOException ex) {
             ex.printStackTrace();
             System.exit(42);
+            return;
         }
 
-        // TODO: Connect to Diffusion
-        // TODO: Populate topics
+        // Connect to Diffusion & create topics
+        Session session = Diffusion.sessions().principal( "control" )
+                .credentials( Diffusion.credentials().password( "password" ) )
+                .open( "ws://localhost:8080" );
+        TopicControl topicControl = session.feature(TopicControl.class);
+        TopicUpdateControl topicUpdateControl = session.feature(TopicUpdateControl.class);
+
+        if ( !createTopics( topicControl, topicUpdateControl, race )){
+            System.out.println("ERROR: Failed to create topics.");
+            System.exit(42);
+            return;
+        }
+
         // TODO: Init simulation
 
         // Start web server
         startWebServer();
 
         // TODO: Start Simulation
+    }
+
+    private static boolean createTopics(TopicControl topicControl, TopicUpdateControl topicUpdateControl, Race race) {
+        final String topicPrefix = "race";
+        final UpdateCallback callback = new UpdateCallback.Default();
+        final ValueUpdater<Long> longUpdater = topicUpdateControl.updater().valueUpdater(Long.class);
+        final ValueUpdater<String> stringUpdater = topicUpdateControl.updater().valueUpdater(String.class);
+
+
+
+        try {
+            // Add team count to teams topic
+            final String teamsTopic = topicPrefix + "/teams";
+            topicControl.addTopic(teamsTopic, TopicType.INT64)
+                    .thenAccept(result -> longUpdater.update( teamsTopic, (long)race.getTeamCount(), callback ))
+                    .get(5, TimeUnit.SECONDS);
+
+            int teamID = 0;
+            for (Race.Team team : race.getTeams()) {
+                // Add team name topic
+                final String teamTopic = topicPrefix + "/teams/" + teamID;
+                topicControl.addTopic(teamTopic, TopicType.STRING)
+                        .thenAccept(result -> stringUpdater.update( teamTopic, team.getName(), callback ))
+                        .get(5, TimeUnit.SECONDS);
+
+                // Add car count to cars topic
+                final String carsTopic = topicPrefix + "/teams/" + teamID + "/cars";
+                topicControl.addTopic(carsTopic, TopicType.INT64)
+                        .thenAccept(result -> longUpdater.update( carsTopic, (long)team.getCarCount(), callback ))
+                        .get(5, TimeUnit.SECONDS);
+
+                int carID = 0;
+                for (Race.Team.Car car : team.getCars()) {
+                    // Add car name topic
+                    final String carTopic = topicPrefix + "/teams/" + teamID + "/cars/" + carID;
+                    topicControl.addTopic(carTopic, TopicType.STRING)
+                            .thenAccept(result -> stringUpdater.update( carTopic, car.getDriver(), callback ))
+                            .get(5, TimeUnit.SECONDS);
+
+                    carID += 1;
+                }
+
+                teamID += 1;
+            }
+            return true;
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private static void startWebServer() {
