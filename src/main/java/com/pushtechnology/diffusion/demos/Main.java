@@ -21,11 +21,23 @@ public class Main
         // Load properties
         RaceProperties properties = loadProperties();
         if ( properties == null ) {
-            System.out.println( "ERROR: No properties loaded!" );
-            System.exit( 42 );
+            System.out.println("ERROR: No properties loaded!");
+            System.exit(42);
         }
 
-        // TODO: Create Teams and Cars
+        // Create the initial race snapshot
+        Race race;
+        try {
+            race = new RaceBuilder()
+                    .withTeams( properties.getTeamCount() )
+                    .withTeamCars( properties.getCarCount() )
+                    .Build();
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.exit(42);
+        }
+
         // TODO: Connect to Diffusion
         // TODO: Populate topics
         // TODO: Init simulation
@@ -40,25 +52,6 @@ public class Main
         port(3142);
         externalStaticFileLocation("src/main/resources/html");
         init();
-    }
-
-    private static class Car {
-        public Car() {
-        }
-    }
-
-    private static class Team {
-        private final HashSet<Car> cars = new HashSet<>();
-
-        public Team() {
-        }
-    }
-
-    private static class Race {
-        private final HashSet<Team> teams = new HashSet<>();
-
-        public Race() {
-        }
     }
 
     private static class RaceProperties {
