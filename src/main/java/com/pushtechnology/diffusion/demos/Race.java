@@ -10,11 +10,11 @@ import java.util.List;
 
 public class Race {
     private final ArrayList<Team> teams;
-    private final String trackFilename;
     private final JSONDataType jsonDataType = Diffusion.dataTypes().json();
+    private final RaceTrack raceTrack;
 
-    public Race(String trackFileName, ArrayList<Team> teams) {
-        this.trackFilename = trackFileName;
+    public Race(RaceTrack racetrack, ArrayList<Team> teams) {
+        this.raceTrack = racetrack;
         this.teams = teams;
     }
 
@@ -26,8 +26,8 @@ public class Race {
         return teams.size();
     }
 
-    public String getTrackFilename() {
-        return trackFilename;
+    public RaceTrack getTrack() {
+        return raceTrack;
     }
 
     public JSON getFastUpdates() {

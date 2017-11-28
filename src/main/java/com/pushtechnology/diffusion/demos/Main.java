@@ -137,8 +137,16 @@ public class Main {
 
         try {
             // Add track filename
+
+            final String trackFile;
+            if ( race.getTrack().getFileName().startsWith( "html/" ) ) {
+                trackFile = race.getTrack().getFileName().substring(5);
+            } else {
+                trackFile = race.getTrack().getFileName();
+            }
+
             topicControl.addTopic(topicPrefix, TopicType.STRING)
-                    .thenAccept(result -> stringUpdater.update(topicPrefix, race.getTrackFilename(), callback))
+                    .thenAccept(result -> stringUpdater.update(topicPrefix, trackFile, callback))
                     .get(5, TimeUnit.SECONDS);
 
             // Add team count to teams topic

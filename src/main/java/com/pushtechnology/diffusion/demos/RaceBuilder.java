@@ -45,7 +45,7 @@ public class RaceBuilder {
         return this;
     }
 
-    public Race Build() {
+    public Race Build() throws IOException {
         if (teamCount <= 0 || carCount <= 0 || trackFilename == null) {
             // TODO: Throw exception in here...
         }
@@ -61,7 +61,8 @@ public class RaceBuilder {
             teams.add(new Race.Team(iTeam, names.getNextTeamName(), cars));
         }
 
-        return new Race(trackFilename, teams);
+        RaceTrack track = new RaceTrack(trackFilename);
+        return new Race(track, teams);
     }
 
     private class NameGenerator {
