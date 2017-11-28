@@ -7,12 +7,15 @@ import com.pushtechnology.diffusion.client.features.control.topics.TopicUpdateCo
 import com.pushtechnology.diffusion.client.session.Session;
 import com.pushtechnology.diffusion.client.topics.details.TopicSpecification;
 import com.pushtechnology.diffusion.client.topics.details.TopicType;
+import com.pushtechnology.diffusion.datatype.json.JSON;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -20,6 +23,7 @@ import java.util.concurrent.TimeoutException;
 import static com.pushtechnology.diffusion.client.features.control.topics.TopicUpdateControl.*;
 import static com.pushtechnology.diffusion.client.features.control.topics.TopicUpdateControl.Updater.*;
 import static com.pushtechnology.diffusion.datatype.DataTypes.INT64_DATATYPE_NAME;
+import static com.pushtechnology.diffusion.datatype.DataTypes.JSON_DATATYPE_NAME;
 import static spark.Spark.externalStaticFileLocation;
 import static spark.Spark.init;
 import static spark.Spark.port;
@@ -58,11 +62,12 @@ public class Main {
         Session session = Diffusion.sessions().principal("control")
                 .credentials(Diffusion.credentials().password("password"))
                 .open("ws://localhost:8080");
-        TopicControl topicControl = session.feature(TopicControl.class);
-        TopicUpdateControl topicUpdateControl = session.feature(TopicUpdateControl.class);
+        final TopicControl topicControl = session.feature(TopicControl.class);
+        final TopicUpdateControl topicUpdateControl = session.feature(TopicUpdateControl.class);
+        final TimeSeries timeSeries = session.feature(TimeSeries.class);
 
         // Create topics
-        if (!createTopics(topicControl, topicUpdateControl, race)) {
+        if (!createTopics(topicControl, topicUpdateControl, timeSeries, race)) {
             System.out.println("ERROR: Failed to create topics.");
             System.exit(42);
             return;
@@ -71,14 +76,60 @@ public class Main {
         // Start web server
         startWebServer();
 
-        startSimulation(topicUpdateControl, race);
+        startSimulation(timeSeries, race);
     }
 
-    private static void startSimulation(TopicUpdateControl topicUpdateControl, Race race) {
-        // TODO: Simulate the world
+    private static void startSimulation(final TimeSeries timeSeries, Race race) {
+        final Random random = new Random(Instant.now().toEpochMilli());
+        long current = System.nanoTime();
+        long previous = current;
+        long fastTick = 0; // 1ms
+        long normalTick = 0; // 20ms
+        long slowTick = 0; // 1000ms
+
+        double min = 0.001;
+        double max = 0.01;
+
+        while (true) {
+            previous = current;
+            current = System.nanoTime();
+
+            fastTick += current - previous;
+            normalTick += current - previous;
+            slowTick += current - previous;
+
+            if ( fastTick >= 1000000 ) {
+                fastTick -= 1000000;
+
+                // TODO: Update fast bits
+            }
+
+            if ( normalTick >= 20000000 ) {
+                normalTick -= 20000000;
+
+                for (Race.Team team : race.getTeams()) {
+                    for (Race.Team.Car car : team.getCars()) {
+                        car.move(min + (max - min) * random.nextDouble());
+                    }
+                }
+
+                timeSeries.append("race/updates/fast", JSON.class, race.getFastUpdates());
+            }
+
+            if ( slowTick >= 100000000 ) {
+                slowTick -= 100000000;
+
+                // TODO: Update slow bits
+            }
+        }
     }
 
-    private static boolean createTopics(TopicControl topicControl, TopicUpdateControl topicUpdateControl, Race race) {
+    private static boolean createTopics(
+            final TopicControl topicControl,
+            final TopicUpdateControl topicUpdateControl,
+            final TimeSeries timeSeries,
+            final Race race) {
+
         final String topicPrefix = "race";
         final UpdateCallback callback = new UpdateCallback.Default();
         final ValueUpdater<Long> longUpdater = topicUpdateControl.updater().valueUpdater(Long.class);
@@ -123,6 +174,16 @@ public class Main {
 
                 teamID += 1;
             }
+
+            // Add time series topic for high-frequency car updates
+            final TopicSpecification specification = topicControl.newSpecification(TopicType.TIME_SERIES)
+                    .withProperty(TopicSpecification.TIME_SERIES_EVENT_VALUE_TYPE, JSON_DATATYPE_NAME);
+
+            final String timeSeriesTopicName = "race/updates/fast";
+            topicControl.addTopic(timeSeriesTopicName, specification)
+                    .thenAccept(result -> timeSeries.append(timeSeriesTopicName, JSON.class, race.getFastUpdates()))
+                    .get(5, TimeUnit.SECONDS);
+
             return true;
 
         } catch (InterruptedException e) {

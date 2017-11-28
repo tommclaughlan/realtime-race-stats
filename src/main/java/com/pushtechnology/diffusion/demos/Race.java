@@ -1,5 +1,9 @@
 package com.pushtechnology.diffusion.demos;
 
+import com.pushtechnology.diffusion.client.Diffusion;
+import com.pushtechnology.diffusion.datatype.json.JSON;
+import com.pushtechnology.diffusion.datatype.json.JSONDataType;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,6 +11,7 @@ import java.util.List;
 public class Race {
     private final ArrayList<Team> teams;
     private final String trackFilename;
+    private final JSONDataType jsonDataType = Diffusion.dataTypes().json();
 
     public Race(String trackFileName, ArrayList<Team> teams) {
         this.trackFilename = trackFileName;
@@ -25,11 +30,32 @@ public class Race {
         return trackFilename;
     }
 
+    public JSON getFastUpdates() {
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+
+        boolean first = true;
+        for (Team team : teams) {
+            for (Team.Car car : team.cars) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(',');
+                }
+                sb.append("{\"pos\":").append(car.position).append("}");
+            }
+        }
+        sb.append(']');
+        return jsonDataType.fromJsonString(sb.toString());
+    }
+
     public static class Team {
         private final ArrayList<Car> cars;
         private final String name;
+        private final int id;
 
-        public Team(String name, ArrayList<Car> cars) {
+        public Team(int id, String name, ArrayList<Car> cars) {
+            this.id = id;
             this.name = name;
             this.cars = cars;
         }
@@ -46,15 +72,38 @@ public class Race {
             return name;
         }
 
+        public int getID() {
+            return id;
+        }
+
         public static class Car {
             private final String driver;
+            private final int id;
 
-            public Car(String driver) {
+            private double position = 0.0;
+
+            public Car(int id, String driver) {
+                this.id = id;
                 this.driver = driver;
             }
 
             public String getDriver() {
                 return driver;
+            }
+
+            public int getID() {
+                return id;
+            }
+
+            public double getPosition() {
+                return position;
+            }
+
+            public void move( double amount ) {
+                position += amount;
+                if ( position >= 1.0 ) {
+                    position -= 1.0;
+                }
             }
         }
     }
