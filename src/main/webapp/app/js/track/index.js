@@ -63,10 +63,11 @@ app.directive('track', function() {
                     ctx.fill();
                     if (car.selected) {
                         ctx.strokeStyle = '#f1f1f1';
+                        ctx.lineWidth = 4;
                     } else {
                         ctx.strokeStyle = '#444444';
+                        ctx.lineWidth = 2;
                     }
-                    ctx.lineWidth = 2;
                     ctx.stroke();
                 });
             };
@@ -79,7 +80,8 @@ app.directive('track', function() {
 app.factory('TrackModel', ['$http', function($http) {
     var svg = require('svg-path-properties');
     var TrackModel = {
-        path : 'm 0,0 0,0'
+        path : 'm 0,0 0,0',
+        properties : null
     };
 
     TrackModel.init = function(trackName) {
@@ -99,15 +101,19 @@ app.factory('TrackModel', ['$http', function($http) {
     };
 
     TrackModel.getStartingLine = function() {
-        var tangent = TrackModel.properties.getTangentAtLength(0);
-        var pos = TrackModel.properties.getPointAtLength(0);
+        if (TrackModel.properties) {
+            var tangent = TrackModel.properties.getTangentAtLength(0);
+            var pos = TrackModel.properties.getPointAtLength(0);
 
-        return {
-            x0 : pos.x - tangent.x,
-            y0 : pos.y - tangent.y,
-            x1 : pos.x + tangent.x,
-            y1 : pos.y + tangent.y
-        };
+            return {
+                x0 : pos.x - tangent.x,
+                y0 : pos.y - tangent.y,
+                x1 : pos.x + tangent.x,
+                y1 : pos.y + tangent.y
+            };
+        } else {
+            return { x0 : 0, y0 : 0, x1 : 0, y1 : 0 };
+        }
     };
 
     return TrackModel;
