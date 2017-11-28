@@ -17,7 +17,7 @@ var liveReload = true;
 gulp.task('browserify', function () {
   return browserify(paths.src + 'app.js', {debug: true})
   .bundle()
-  .pipe(source('app.js'))
+  .pipe(source('bundle.js'))
   .pipe(gulp.dest(paths.dist))
   .pipe(connect.reload());
 });
@@ -30,16 +30,7 @@ gulp.task('browserify-min', ['ngAnnotate'], function () {
   .pipe(gulp.dest(paths.dist));
 });
 
-
-gulp.task('server', ['browserify'], function () {
-  connect.server({
-    root: 'app',
-    livereload: liveReload,
-  });
-});
-
 gulp.task('watch', function () {
-  gulp.start('server');
   gulp.watch([
     paths.src + '**/*.js',
     '!' + paths.src + 'third-party/**',

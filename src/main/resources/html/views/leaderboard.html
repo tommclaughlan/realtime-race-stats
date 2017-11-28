@@ -1,0 +1,16 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Pos</th>
+            <th scope="col">Name</th>
+            <th scope="col">Team</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="car in getOrderedCars()">
+            <th scope="row">{{ $index + 1}}</th>
+            <th>{{car.name}}</th>
+            <th>{{car.team}}</th>
+        </tr>
+    </tbody>
+</table>
