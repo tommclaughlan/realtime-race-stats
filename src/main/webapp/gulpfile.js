@@ -30,7 +30,7 @@ gulp.task('browserify-min', ['ngAnnotate'], function () {
   .pipe(gulp.dest(paths.dist));
 });
 
-gulp.task('watch', function () {
+gulp.task('watch', ['browserify'], function () {
   gulp.watch([
     paths.src + '**/*.js',
     '!' + paths.src + 'third-party/**',

@@ -3,11 +3,12 @@ var app = require('angular').module('racing');
 app.factory('CarsModel', ['Diffusion', function(Diffusion) {
     var CarsModel = {
         teams : [],
-        cars : []
+        cars : [],
+        colours : ['#cc0066', '#00aeef', '#00b956', '#ffc600', '#f64d3c']
     };
 
     CarsModel.addCar = function(car, name, team) {
-        this.teams[team].cars[car] = { name : name };
+        this.teams[team].cars[car] = { name : name, colour : this.colours[team] };
     };
 
     CarsModel.addTeam = function(team, name) {
@@ -28,11 +29,17 @@ app.factory('CarsModel', ['Diffusion', function(Diffusion) {
     };
 
     CarsModel.getCars = function() {
-        return this.cars;
+        return CarsModel.cars;
     };
 
     CarsModel.updateCars = function(cars) {
-        this.cars = cars;
+        CarsModel.cars = cars;
+    };
+
+    CarsModel.updateCarPosition = function(car, team, position) {
+        if (this.teams[team]) {
+            this.teams[team].cars[car].position = position;
+        }
     };
 
     return CarsModel;
