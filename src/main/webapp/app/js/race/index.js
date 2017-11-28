@@ -29,10 +29,16 @@ app.controller('RaceController', ['$scope', '$interval', 'TrackModel', 'Diffusio
     };
 
     var updateLeaderBoard = function() {
+        var selected = CarsModel.getSelectedCar();
         var cars = CarsModel.teams.reduce(function(res, team, i) {
             team.cars.forEach(function(car, j) {
                 var pos = TrackModel.getPositionAtLength(car.position);
-                res.push({ name : car.name, team : team.name, pos : { x : pos.x, y : pos.y }, colour : car.colour, teamid : i, carid : j, selected : car.selected });
+                var c = { name : car.name, team : team.name, pos : { x : pos.x, y : pos.y }, colour : car.colour, teamid : i, carid : j };
+
+                if (selected) {
+                    c.selected = i === selected.teamid && j === selected.carid;
+                }
+                res.push(c);
             });
             return res;
         }, []);

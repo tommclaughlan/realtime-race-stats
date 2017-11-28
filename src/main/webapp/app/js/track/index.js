@@ -8,6 +8,7 @@ app.directive('track', function() {
             drawables : '@drawables'
         },
         link : function(scope, elem, attrs) {
+            var times = 0;
             var setBoundingBox = function(ctx,alphaThreshold){
                 if (alphaThreshold===undefined) alphaThreshold = 15;
                 var minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
@@ -38,10 +39,15 @@ app.directive('track', function() {
                 var path = drawables.path;
                 var ctx = elem[0].getContext('2d');
 
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
                 var p = new Path2D(path);
                 ctx.stroke(p);
 
-                setBoundingBox(ctx);
+                if (times < 5) {
+                    setBoundingBox(ctx);
+                    times++;
+                }
 
                 ctx.strokeStyle = '#aaa';
                 ctx.lineWidth = 40;

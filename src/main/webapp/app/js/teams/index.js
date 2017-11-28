@@ -43,11 +43,11 @@ app.factory('CarsModel', ['Diffusion', function(Diffusion) {
     };
 
     CarsModel.selectCar = function(i, j) {
-        CarsModel.teams.forEach(function(team, t) {
-            team.cars.forEach(function(car, c) {
-                car.selected = c === i && t === j;
-            });
-        });
+        CarsModel.selected = { carid : i, teamid : j };
+    };
+
+    CarsModel.getSelectedCar = function() {
+        return CarsModel.selected;
     };
 
     return CarsModel;
