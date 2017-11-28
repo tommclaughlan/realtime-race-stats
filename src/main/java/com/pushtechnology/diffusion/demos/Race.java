@@ -43,16 +43,16 @@ public class Race {
             }
             sb.append('[');
             boolean firstCar = true;
-            for (Team.Car car : team.cars) {
+            for (Car car : team.cars) {
                 if (firstCar) {
                     firstCar = false;
                 } else {
                     sb.append(',');
                 }
                 sb.append("{\"pos\":")
-                        .append(car.position)
+                        .append(car.getPosition())
                         .append(",\"lap\":")
-                        .append(car.lap)
+                        .append(car.getLap())
                         .append("}");
             }
             sb.append(']');
@@ -87,43 +87,6 @@ public class Race {
 
         public int getID() {
             return id;
-        }
-
-        public static class Car {
-            private final String driver;
-            private final int id;
-
-            private double position = 0.0;
-            private int lap = 1;
-
-            public Car(int id, String driver) {
-                this.id = id;
-                this.driver = driver;
-            }
-
-            public String getDriver() {
-                return driver;
-            }
-
-            public int getID() {
-                return id;
-            }
-
-            public double getPosition() {
-                return position;
-            }
-
-            public int getLap() {
-                return lap;
-            }
-
-            public void move( double amount ) {
-                position += amount;
-                if ( position >= 1.0 ) {
-                    position -= 1.0;
-                    lap += 1;
-                }
-            }
         }
     }
 }

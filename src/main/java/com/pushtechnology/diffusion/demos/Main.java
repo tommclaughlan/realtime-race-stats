@@ -43,6 +43,8 @@ public class Main {
             return;
         }
 
+
+
         // Create the initial race snapshot
         Race race;
         try {
@@ -100,7 +102,7 @@ public class Main {
                 tick -= nanoFrequency;
 
                 for (Race.Team team : race.getTeams()) {
-                    for (Race.Team.Car car : team.getCars()) {
+                    for (Car car : team.getCars()) {
                         car.move(min + (max - min) * random.nextDouble());
                     }
                 }
@@ -156,11 +158,11 @@ public class Main {
                         .get(5, TimeUnit.SECONDS);
 
                 int carID = 0;
-                for (Race.Team.Car car : team.getCars()) {
+                for (Car car : team.getCars()) {
                     // Add car name topic
                     final String carTopic = topicPrefix + "/teams/" + teamID + "/cars/" + carID;
                     topicControl.addTopic(carTopic, TopicType.STRING)
-                            .thenAccept(result -> stringUpdater.update(carTopic, car.getDriver(), callback))
+                            .thenAccept(result -> stringUpdater.update(carTopic, car.getDriverName(), callback))
                             .get(5, TimeUnit.SECONDS);
 
                     carID += 1;

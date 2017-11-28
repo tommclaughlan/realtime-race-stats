@@ -54,9 +54,9 @@ public class RaceBuilder {
         ArrayList<Race.Team> teams = new ArrayList<>(teamCount);
         for (int iTeam = 0; iTeam < teamCount; iTeam += 1) {
 
-            ArrayList<Race.Team.Car> cars = new ArrayList<>(carCount);
+            ArrayList<Car> cars = new ArrayList<>(carCount);
             for (int iCar = 0; iCar < carCount; iCar += 1) {
-                cars.add(new Race.Team.Car(iCar, names.getNextDriverName()));
+                cars.add(new Car(iCar, names.getNextDriverName()));
             }
 
             teams.add(new Race.Team(iTeam, names.getNextTeamName(), cars));
