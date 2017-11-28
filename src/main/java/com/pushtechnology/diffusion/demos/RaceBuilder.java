@@ -55,10 +55,10 @@ public class RaceBuilder {
 
             ArrayList<Race.Team.Car> cars = new ArrayList<>(carCount);
             for (int iCar = 0; iCar < carCount; iCar += 1) {
-                cars.add(new Race.Team.Car(names.getNextDriverName()));
+                cars.add(new Race.Team.Car(iCar, names.getNextDriverName()));
             }
 
-            teams.add(new Race.Team(names.getNextTeamName(), cars));
+            teams.add(new Race.Team(iTeam, names.getNextTeamName(), cars));
         }
 
         return new Race(trackFilename, teams);
