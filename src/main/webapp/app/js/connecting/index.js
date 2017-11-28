@@ -5,7 +5,6 @@ app.controller('ConnectingController', ['$scope', '$state', '$timeout', 'Diffusi
         Diffusion.session().stream('race').asType(Diffusion.datatypes.string())
             .on('value', function(topic, spec, value) {
                 TrackModel.init(value);
-                $scope.trackInit = true;
                 $state.go('race');
             });
 

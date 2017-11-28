@@ -20,16 +20,40 @@ app.controller('RaceController', ['$scope', '$interval', 'TrackModel', 'Diffusio
         return TrackModel.getPath();
     };
 
-    Diffusion.session();
+    $scope.getDrawables = function() {
+        return {
+            path : TrackModel.getPath(),
+            cars : CarsModel.getCars(),
+            startingLine : TrackModel.getStartingLine()
+        };
+    };
 
-    $interval(function() {
+    var updateLeaderBoard = function() {
         var cars = CarsModel.teams.reduce(function(res, team) {
             team.cars.forEach(function(car) {
-                res.push({ name : car.name, team : team.name });
+                var pos = TrackModel.getPositionAtLength(car.position);
+                res.push({ name : car.name, team : team.name, pos : { x : pos.x, y : pos.y }, colour : car.colour });
             });
             return res;
         }, []);
 
         CarsModel.updateCars(cars);
-    }, 1000);
+    };
+
+    Diffusion.session().stream('race/updates/fast').asType(Diffusion.datatypes.json())
+        .on('value', function(topic, spec, value) {
+            $scope.$apply(function() {
+                var val = value.value.get();
+
+                val.forEach(function(team, i) {
+                    team.forEach(function(car, j) {
+                        CarsModel.updateCarPosition(j, i, car.pos);
+                    });
+                });
+
+                updateLeaderBoard();
+            });
+        });
+    Diffusion.session().subscribe('race/updates/fast');
+
 }]);
