@@ -101,7 +101,7 @@ public class Main {
             if ( tick >= nanoFrequency ) {
                 tick -= nanoFrequency;
 
-                for (Race.Team team : race.getTeams()) {
+                for (Team team : race.getTeams()) {
                     for (Car car : team.getCars()) {
                         car.move(min + (max - min) * random.nextDouble());
                     }
@@ -144,7 +144,7 @@ public class Main {
                     .get(5, TimeUnit.SECONDS);
 
             int teamID = 0;
-            for (Race.Team team : race.getTeams()) {
+            for (Team team : race.getTeams()) {
                 // Add team name topic
                 final String teamTopic = topicPrefix + "/teams/" + teamID;
                 topicControl.addTopic(teamTopic, TopicType.STRING)

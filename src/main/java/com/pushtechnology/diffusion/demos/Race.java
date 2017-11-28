@@ -43,7 +43,7 @@ public class Race {
             }
             sb.append('[');
             boolean firstCar = true;
-            for (Car car : team.cars) {
+            for (Car car : team.getCars()) {
                 if (firstCar) {
                     firstCar = false;
                 } else {
@@ -60,33 +60,5 @@ public class Race {
 
         sb.append(']');
         return jsonDataType.fromJsonString(sb.toString());
-    }
-
-    public static class Team {
-        private final ArrayList<Car> cars;
-        private final String name;
-        private final int id;
-
-        public Team(int id, String name, ArrayList<Car> cars) {
-            this.id = id;
-            this.name = name;
-            this.cars = cars;
-        }
-
-        public List<Car> getCars() {
-            return Collections.unmodifiableList(cars);
-        }
-
-        public int getCarCount() {
-            return cars.size();
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getID() {
-            return id;
-        }
     }
 }

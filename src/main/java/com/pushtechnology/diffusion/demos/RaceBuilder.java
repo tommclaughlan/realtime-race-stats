@@ -51,7 +51,7 @@ public class RaceBuilder {
             // TODO: Throw exception in here...
         }
 
-        ArrayList<Race.Team> teams = new ArrayList<>(teamCount);
+        ArrayList<Team> teams = new ArrayList<>(teamCount);
         for (int iTeam = 0; iTeam < teamCount; iTeam += 1) {
 
             ArrayList<Car> cars = new ArrayList<>(carCount);
@@ -59,7 +59,7 @@ public class RaceBuilder {
                 cars.add(new Car(iCar, names.getNextDriverName()));
             }
 
-            teams.add(new Race.Team(iTeam, names.getNextTeamName(), cars));
+            teams.add(new Team(iTeam, names.getNextTeamName(), cars));
         }
 
         RaceTrack track = new RaceTrack(trackFilename);
