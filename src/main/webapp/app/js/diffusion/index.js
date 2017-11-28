@@ -1,5 +1,25 @@
 var app = require('angular').module('racing');
 
-app.factory('Diffusion', function() {
-    return diffusion;
-});
+app.factory('Diffusion', ['$state', function($state) {
+    var Diffusion = {
+        _session : null
+    };
+
+    Diffusion.connect = function(url, done) {
+        diffusion.connect(url).then(function(session) {
+            Diffusion._session = session;
+            done();
+        });
+    };
+
+    Diffusion.session = function() {
+        if (!this._session || !this._session.isConnected()) {
+            $state.go('connecting');
+        }
+        return this._session;
+    };
+
+    Diffusion.datatypes = diffusion.datatypes;
+
+    return Diffusion;
+}]);

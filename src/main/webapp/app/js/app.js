@@ -9,6 +9,8 @@ var app = angular.module('racing', ['ui.router']);
 require('./diffusion');
 require('./track');
 require('./race');
+require('./teams');
+require('./leaderboard');
 require('./connecting');
 
 app.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
