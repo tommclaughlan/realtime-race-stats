@@ -13,12 +13,15 @@
     "glob": "^7.1.2",
     "gulp": "^3.9.1",
     "gulp-connect": "5.0.0",
-    "gulp-eslint": "4.0.0",
     "gulp-streamify": "1.0.2",
     "gulp-uglify": "3.0.0",
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
-    "angular": "^1.6.6"
+    "@uirouter/angularjs": "^1.0.3",
+    "angular": "^1.6.6",
+    "browserify-fs": "^1.0.0",
+    "diffusion": "6.0.2",
+    "svg-path-properties": "^0.4.1"
   }
 }

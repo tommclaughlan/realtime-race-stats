@@ -3,7 +3,6 @@ var browserify = require('browserify'),
     streamify = require('gulp-streamify'),
     uglify = require('gulp-uglify'),
     connect = require('gulp-connect'),
-    eslint = require('gulp-eslint'),
     source = require('vinyl-source-stream'),
     gulp = require('gulp');
 
@@ -14,18 +13,6 @@ var paths = {
 };
 
 var liveReload = true;
-
-gulp.task('lint', function () {
-  return gulp
-  .src(['gulpfile.js',
-      paths.src + '**/*.js',
-      paths.test + '**/*.js',
-      '!' + paths.src + 'third-party/**',
-      '!' + paths.test + 'browserified/**',
-  ])
-  .pipe(eslint())
-  .pipe(eslint.format());
-});
 
 gulp.task('browserify', function () {
   return browserify(paths.src + 'app.js', {debug: true})
@@ -57,7 +44,7 @@ gulp.task('watch', function () {
     paths.src + '**/*.js',
     '!' + paths.src + 'third-party/**',
     paths.test + '**/*.js',
-  ], ['fast']);
+  ], ['browserify']);
 });
 
 gulp.task('default', ['browserify']);
