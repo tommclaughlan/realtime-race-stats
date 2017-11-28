@@ -37,9 +37,17 @@ app.factory('CarsModel', ['Diffusion', function(Diffusion) {
     };
 
     CarsModel.updateCarPosition = function(car, team, position) {
-        if (this.teams[team]) {
+        if (this.teams[team] && this.teams[team].cars[car]) {
             this.teams[team].cars[car].position = position;
         }
+    };
+
+    CarsModel.selectCar = function(i, j) {
+        CarsModel.teams.forEach(function(team, t) {
+            team.cars.forEach(function(car, c) {
+                car.selected = c === i && t === j;
+            });
+        });
     };
 
     return CarsModel;

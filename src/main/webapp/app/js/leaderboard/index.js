@@ -5,5 +5,10 @@ app.controller('LeaderboardController', ['$scope', 'CarsModel', function($scope,
         return CarsModel.getCars();
     };
 
+    $scope.selectCar = function(car, team) {
+        console.log(car, team);
+        CarsModel.selectCar(car, team);
+    };
+
     $scope.getTeamName = CarsModel.getTeamName;
 }]);

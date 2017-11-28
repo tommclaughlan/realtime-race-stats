@@ -29,10 +29,10 @@ app.controller('RaceController', ['$scope', '$interval', 'TrackModel', 'Diffusio
     };
 
     var updateLeaderBoard = function() {
-        var cars = CarsModel.teams.reduce(function(res, team) {
-            team.cars.forEach(function(car) {
+        var cars = CarsModel.teams.reduce(function(res, team, i) {
+            team.cars.forEach(function(car, j) {
                 var pos = TrackModel.getPositionAtLength(car.position);
-                res.push({ name : car.name, team : team.name, pos : { x : pos.x, y : pos.y }, colour : car.colour });
+                res.push({ name : car.name, team : team.name, pos : { x : pos.x, y : pos.y }, colour : car.colour, teamid : i, carid : j, selected : car.selected });
             });
             return res;
         }, []);
@@ -55,5 +55,4 @@ app.controller('RaceController', ['$scope', '$interval', 'TrackModel', 'Diffusio
             });
         });
     Diffusion.session().subscribe('race/updates/fast');
-
 }]);
