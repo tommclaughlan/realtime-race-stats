@@ -14,21 +14,21 @@ app.controller('ConnectingController', ['$scope', '$state', '$timeout', 'Diffusi
                     Diffusion.session().stream('race/teams/' + i).asType(Diffusion.datatypes.string())
                         .on('value', function(topic, spec, value) {
                             var parts = topic.split('/');
-                            var team = parts[2];
+                            var team = parseInt(parts[2], 10);
                             CarsModel.addTeam(team, value);
                         });
 
                     Diffusion.session().stream('race/teams/' + i + '/cars').asType(Diffusion.datatypes.int64())
                         .on('value', function(topic, spec, value) {
                             var parts = topic.split('/');
-                            var team = parts[2];
+                            var team = parseInt(parts[2], 10);
                             var nCars = value;
 
                             for(var j = 0; j < value; ++j) {
                                 Diffusion.session().stream('race/teams/' + team + '/cars/' + j).asType(Diffusion.datatypes.string())
                                     .on('value', function(topic, spec, value) {
                                         var parts = topic.split('/');
-                                        var car = parts[4];
+                                        var car = parseInt(parts[4], 10);
                                         CarsModel.addCar(car, value, team);
                                     });
                             }
