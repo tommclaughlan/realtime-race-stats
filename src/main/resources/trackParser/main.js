@@ -27,7 +27,8 @@ var parsedPath = {
             length : part.length,
             type : type
         }
-    })
+    }),
+    rawPath : pathToParse
 };
 
 fs.writeFile(fileToRead + '.track', JSON.stringify(parsedPath), (err) => {
