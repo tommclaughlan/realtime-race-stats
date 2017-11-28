@@ -76,16 +76,16 @@ public class Main {
         // Start web server
         startWebServer();
 
-        startSimulation(timeSeries, race);
+        startSimulation(properties.getUpdateFrequency(), timeSeries, race);
     }
 
-    private static void startSimulation(final TimeSeries timeSeries, Race race) {
+    private static void startSimulation(long frequency, final TimeSeries timeSeries, Race race) {
         final Random random = new Random(Instant.now().toEpochMilli());
+        final long nanoFrequency = frequency * 1000000;
+
         long current = System.nanoTime();
         long previous = current;
-        long fastTick = 0; // 1ms
-        long normalTick = 0; // 20ms
-        long slowTick = 0; // 1000ms
+        long tick = 0;
 
         double min = 0.001;
         double max = 0.01;
@@ -94,18 +94,10 @@ public class Main {
             previous = current;
             current = System.nanoTime();
 
-            fastTick += current - previous;
-            normalTick += current - previous;
-            slowTick += current - previous;
+            tick += current - previous;
 
-            if ( fastTick >= 1000000 ) {
-                fastTick -= 1000000;
-
-                // TODO: Update fast bits
-            }
-
-            if ( normalTick >= 20000000 ) {
-                normalTick -= 20000000;
+            if ( tick >= nanoFrequency ) {
+                tick -= nanoFrequency;
 
                 for (Race.Team team : race.getTeams()) {
                     for (Race.Team.Car car : team.getCars()) {
@@ -114,12 +106,6 @@ public class Main {
                 }
 
                 timeSeries.append("race/updates/fast", JSON.class, race.getFastUpdates());
-            }
-
-            if ( slowTick >= 100000000 ) {
-                slowTick -= 100000000;
-
-                // TODO: Update slow bits
             }
         }
     }
@@ -214,11 +200,18 @@ public class Main {
         private final String track;
         private final int teamCount;
         private final int carCount;
+        private final long updateFrequency;
 
-        public RaceProperties(String track, int teamCount, int carCount) {
+        public RaceProperties(
+                String track,
+                int teamCount,
+                int carCount,
+                long updateFrequency ) {
+
             this.track = track;
             this.teamCount = teamCount;
             this.carCount = carCount;
+            this.updateFrequency = updateFrequency;
         }
 
         public String getTrack() {
@@ -231,6 +224,10 @@ public class Main {
 
         public int getCarCount() {
             return carCount;
+        }
+
+        public long getUpdateFrequency() {
+            return updateFrequency;
         }
     }
 
@@ -274,7 +271,20 @@ public class Main {
                 System.out.println("Cars: " + cars);
             }
 
-            return new RaceProperties(track, Integer.parseUnsignedInt(teams), Integer.parseUnsignedInt(cars));
+            // Read update frequency in milliseconds
+            String freq = properties.getProperty("updatefreq");
+            if (freq == null) {
+                System.out.println("No update frequency defined!");
+                return null;
+            } else {
+                System.out.println("Update frequency: " + freq + "ms");
+            }
+
+            return new RaceProperties(
+                    track,
+                    Integer.parseUnsignedInt(teams),
+                    Integer.parseUnsignedInt(cars),
+                    Long.parseUnsignedLong(freq));
         } catch (IOException ex) {
             ex.printStackTrace();
             return null;

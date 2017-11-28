@@ -10,6 +10,7 @@ import java.util.Random;
 public class RaceBuilder {
     private final NameGenerator names;
 
+    private long updateFrequency;
     private int teamCount;
     private int carCount;
     private String trackFilename;
