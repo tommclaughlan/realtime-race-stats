@@ -34,17 +34,26 @@ public class Race {
         StringBuilder sb = new StringBuilder();
         sb.append('[');
 
-        boolean first = true;
+        boolean firstTeam = true;
         for (Team team : teams) {
+            if ( firstTeam ) {
+                firstTeam = false;
+            } else {
+                sb.append(',');
+            }
+            sb.append('[');
+            boolean firstCar = true;
             for (Team.Car car : team.cars) {
-                if (first) {
-                    first = false;
+                if (firstCar) {
+                    firstCar = false;
                 } else {
                     sb.append(',');
                 }
                 sb.append("{\"pos\":").append(car.position).append("}");
             }
+            sb.append(']');
         }
+
         sb.append(']');
         return jsonDataType.fromJsonString(sb.toString());
     }
