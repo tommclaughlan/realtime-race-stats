@@ -71,15 +71,12 @@ public class Race {
             current = System.nanoTime();
             tick += current - previous;
 
-            // TODO: Update cars based on time and speed and acceleration and location
+            for (Car car : cars) {
+                car.move(tick);
+            }
 
             if ( tick >= nanoFrequency ) {
                 tick -= nanoFrequency;
-
-                // TODO: remove this
-                for (Car car : cars) {
-                    car.move(min + (max - min) * random.nextDouble());
-                }
 
                 // Update positions
                 Collections.sort(sorted);

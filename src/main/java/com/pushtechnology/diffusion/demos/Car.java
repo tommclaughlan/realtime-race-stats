@@ -11,6 +11,7 @@ public class Car implements Comparable<Car> {
     private int lap = 1;
     private int position = 0;
     private double location = 0.0;
+    private double currentSpeed = 0.0;
 
     public Car(
             int id,
@@ -23,7 +24,7 @@ public class Car implements Comparable<Car> {
         this.id = id;
         this.teamId = teamId;
         this.driverName = driverName;
-        this.maxSpeed = maxSpeed;
+        this.maxSpeed = maxSpeed / 3.6; // hm/h to m/s
         this.acceleration = acceleration;
         this.deceleration = deceleration;
     }
@@ -36,24 +37,22 @@ public class Car implements Comparable<Car> {
         return id;
     }
 
-    int getTeamId() {
-        return teamId;
-    }
-
-    double getLocation() {
-        return location;
-    }
-
-    int getLap() {
-        return lap;
-    }
-
     void setPosition(int position) {
         this.position = position;
     }
 
-    void move(double amount) {
-        location += amount;
+    void move(long elapsed) {
+        double elapsedSeconds = ((double)elapsed / 1000000000.0);
+
+        // Accelerate
+        currentSpeed += acceleration * elapsedSeconds;
+        if ( currentSpeed > maxSpeed ) {
+            // Cap to max speed
+            currentSpeed = maxSpeed;
+        }
+
+        // Move ahead
+        location += currentSpeed * elapsedSeconds;
         if ( location >= 1.0 ) {
             location -= 1.0;
             lap += 1;
@@ -71,6 +70,8 @@ public class Car implements Comparable<Car> {
                 .append(location)
                 .append(",\"pos\":")
                 .append(position)
+                .append(",\"speed\":")
+                .append((int)(currentSpeed * 3.6)) //m/s to km/h
                 .append('}');
     }
 
