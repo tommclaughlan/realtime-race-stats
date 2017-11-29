@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 class RaceBuilder {
     public static RaceBuilder create() {
@@ -30,6 +32,7 @@ class RaceBuilder {
     private String trackFilename = null;
     private Session session = null;
     private String topic = null;
+    private String retainedRange = null;
 
     private RaceBuilder(Randomiser randomiser) {
         this.randomiser = randomiser;
@@ -86,13 +89,22 @@ class RaceBuilder {
         return this;
     }
 
+    RaceBuilder setRetainedRange(String retainedRange) {
+        if (retainedRange == null) {
+            throw new IllegalArgumentException("Retained Range can't be null.");
+        }
+        this.retainedRange = retainedRange;
+        return this;
+    }
+
     public Race Build() {
         if (updateFrequency <= 0
                 || teamCount <= 0
                 || carCount <= 0
                 || trackFilename == null
                 || session == null
-                || topic == null) {
+                || topic == null
+                || retainedRange == null) {
             return null;
         }
 
@@ -114,7 +126,14 @@ class RaceBuilder {
             e.printStackTrace();
             return null;
         }
-        return new Race(updateFrequency, session, track, topic, teams);
+        try {
+            return new Race(updateFrequency, session, track, topic, retainedRange, teams);
+        } catch (InterruptedException
+                | ExecutionException
+                | TimeoutException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private static class Randomiser {

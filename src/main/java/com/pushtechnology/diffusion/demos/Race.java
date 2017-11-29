@@ -10,6 +10,7 @@ import com.pushtechnology.diffusion.client.topics.details.TopicType;
 import com.pushtechnology.diffusion.datatype.json.JSON;
 import com.pushtechnology.diffusion.datatype.json.JSONDataType;
 
+import java.lang.reflect.Array;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -22,14 +23,21 @@ public class Race {
     private static final JSONDataType JSON_DATA_TYPE = Diffusion.dataTypes().json();
     private final ArrayList<Team> teams;
     private final ArrayList<Car> cars;
+    private final ArrayList<Car> sorted;
     private final RaceTrack raceTrack;
     private final long updateFrequency;
     private final Session session;
     private final String topic;
-    private final TopicUpdateControl topicUpdateControl;
     private final TimeSeries timeSeries;
 
-    public Race(long updateFrequency, Session session, RaceTrack racetrack, String topic, ArrayList<Team> teams) {
+    public Race(
+            long updateFrequency,
+            Session session,
+            RaceTrack racetrack,
+            String topic,
+            String retainedRange,
+            ArrayList<Team> teams) throws InterruptedException, ExecutionException, TimeoutException {
+
         this.updateFrequency = updateFrequency;
         this.raceTrack = racetrack;
         this.session = session;
@@ -37,21 +45,17 @@ public class Race {
         this.topic = topic;
 
         cars = new ArrayList<>();
+        sorted = new ArrayList<>();
         for(Team team : teams ) {
             cars.addAll(team.getCars());
+            sorted.addAll(team.getCars());
         }
 
-        topicUpdateControl = session.feature(TopicUpdateControl.class);
         timeSeries = session.feature(TimeSeries.class);
+        createTopics(retainedRange);
     }
 
     void start() {
-        if ( !createTopics() ) {
-            System.out.println("Failed to create topics");
-            System.exit(42);
-            return;
-        }
-
         final Random random = new Random(Instant.now().toEpochMilli());
         final long nanoFrequency = updateFrequency * 1000000;
 
@@ -73,7 +77,7 @@ public class Race {
                 tick -= nanoFrequency;
 
                 // Update positions
-                ArrayList<Car> sorted = new ArrayList<>(cars);
+
                 // Collections.sort(sorted, );
                 for (Car car : cars) {
                     car.move(min + (max - min) * random.nextDouble());
@@ -103,73 +107,62 @@ public class Race {
         return JSON_DATA_TYPE.fromJsonString(sb.toString());
     }
 
-    private boolean createTopics() {
+    private void createTopics(String retainedRange) throws InterruptedException, ExecutionException, TimeoutException {
         final TopicControl topicControl = session.feature(TopicControl.class);
+        final TopicUpdateControl topicUpdateControl = session.feature(TopicUpdateControl.class);
         final TopicUpdateControl.Updater.UpdateCallback callback = new TopicUpdateControl.Updater.UpdateCallback.Default();
         final TopicUpdateControl.ValueUpdater<Long> longUpdater = topicUpdateControl.updater().valueUpdater(Long.class);
         final TopicUpdateControl.ValueUpdater<String> stringUpdater = topicUpdateControl.updater().valueUpdater(String.class);
 
-        try {
-            // Add track filename
-            // Note: we remove the html prefix to not confuse the webserver
-            final String trackFile;
-            if ( raceTrack.getFileName().startsWith( "html/" ) ) {
-                trackFile = raceTrack.getFileName().substring(5);
-            } else {
-                trackFile = raceTrack.getFileName();
-            }
-
-            topicControl.addTopic(topic, TopicType.STRING)
-                    .thenAccept(result -> stringUpdater.update(topic, trackFile, callback))
-                    .get(5, TimeUnit.SECONDS);
-
-            // Add team count to teams topic
-            final String teamsTopic = topic + "/teams";
-            topicControl.addTopic(teamsTopic, TopicType.INT64)
-                    .thenAccept(result -> longUpdater.update(teamsTopic, (long)teams.size(), callback))
-                    .get(5, TimeUnit.SECONDS);
-
-            for (Team team : teams) {
-                // Add team name topic
-                final String teamTopic = topic + "/teams/" + team.getID();
-                topicControl.addTopic(teamTopic, TopicType.STRING)
-                        .thenAccept(result -> stringUpdater.update(teamTopic, team.getName(), callback))
-                        .get(5, TimeUnit.SECONDS);
-
-                // Add car count to cars topic
-                final String carsTopic = topic + "/teams/" + team.getID() + "/cars";
-                topicControl.addTopic(carsTopic, TopicType.INT64)
-                        .thenAccept(result -> longUpdater.update(carsTopic, (long) team.getCarCount(), callback))
-                        .get(5, TimeUnit.SECONDS);
-
-                for (Car car : team.getCars()) {
-                    // Add car name topic
-                    final String carTopic = topic + "/teams/" + team.getID() + "/cars/" + car.getId();
-                    topicControl.addTopic(carTopic, TopicType.STRING)
-                            .thenAccept(result -> stringUpdater.update(carTopic, car.getDriverName(), callback))
-                            .get(5, TimeUnit.SECONDS);
-                }
-            }
-
-            // Add time series topic for high-frequency car updates
-            final TopicSpecification specification = topicControl.newSpecification(TopicType.TIME_SERIES)
-                    .withProperty(TopicSpecification.TIME_SERIES_EVENT_VALUE_TYPE, JSON_DATATYPE_NAME)
-                    .withProperty(TopicSpecification.TIME_SERIES_RETAINED_RANGE, "last 600s");
-
-            final String timeSeriesTopicName = topic + "/updates";
-            topicControl.addTopic(timeSeriesTopicName, specification)
-                    .thenAccept(result -> timeSeries.append(timeSeriesTopicName, JSON.class, createJSON()))
-                    .get(5, TimeUnit.SECONDS);
-
-            return true;
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
+        // Add track filename
+        // Note: we remove the html prefix to not confuse the webserver
+        final String trackFile;
+        if ( raceTrack.getFileName().startsWith( "html/" ) ) {
+            trackFile = raceTrack.getFileName().substring(5);
+        } else {
+            trackFile = raceTrack.getFileName();
         }
-        return false;
+
+        topicControl.addTopic(topic, TopicType.STRING)
+                .thenAccept(result -> stringUpdater.update(topic, trackFile, callback))
+                .get(5, TimeUnit.SECONDS);
+
+        // Add team count to teams topic
+        final String teamsTopic = topic + "/teams";
+        topicControl.addTopic(teamsTopic, TopicType.INT64)
+                .thenAccept(result -> longUpdater.update(teamsTopic, (long)teams.size(), callback))
+                .get(5, TimeUnit.SECONDS);
+
+        for (Team team : teams) {
+            // Add team name topic
+            final String teamTopic = topic + "/teams/" + team.getID();
+            topicControl.addTopic(teamTopic, TopicType.STRING)
+                    .thenAccept(result -> stringUpdater.update(teamTopic, team.getName(), callback))
+                    .get(5, TimeUnit.SECONDS);
+
+            // Add car count to cars topic
+            final String carsTopic = topic + "/teams/" + team.getID() + "/cars";
+            topicControl.addTopic(carsTopic, TopicType.INT64)
+                    .thenAccept(result -> longUpdater.update(carsTopic, (long) team.getCarCount(), callback))
+                    .get(5, TimeUnit.SECONDS);
+
+            for (Car car : team.getCars()) {
+                // Add car name topic
+                final String carTopic = topic + "/teams/" + team.getID() + "/cars/" + car.getId();
+                topicControl.addTopic(carTopic, TopicType.STRING)
+                        .thenAccept(result -> stringUpdater.update(carTopic, car.getDriverName(), callback))
+                        .get(5, TimeUnit.SECONDS);
+            }
+        }
+
+        // Add time series topic for high-frequency car updates
+        final TopicSpecification specification = topicControl.newSpecification(TopicType.TIME_SERIES)
+                .withProperty(TopicSpecification.TIME_SERIES_EVENT_VALUE_TYPE, JSON_DATATYPE_NAME)
+                .withProperty(TopicSpecification.TIME_SERIES_RETAINED_RANGE, retainedRange);
+
+        final String timeSeriesTopicName = topic + "/updates";
+        topicControl.addTopic(timeSeriesTopicName, specification)
+                .thenAccept(result -> timeSeries.append(timeSeriesTopicName, JSON.class, createJSON()))
+                .get(5, TimeUnit.SECONDS);
     }
 }

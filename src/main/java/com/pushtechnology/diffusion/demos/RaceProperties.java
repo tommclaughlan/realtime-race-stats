@@ -63,12 +63,22 @@ class RaceProperties {
                 System.out.println("Topic: " + topic);
             }
 
+            // Read retained range for time series topics
+            String retained = properties.getProperty("retainedrange");
+            if (retained == null) {
+                System.out.println("No retained range for time series defined!");
+                return null;
+            } else {
+                System.out.println("Time Series Retained Range: " + retained);
+            }
+
             return new RaceProperties(
                     track,
                     topic,
                     Integer.parseUnsignedInt(teams),
                     Integer.parseUnsignedInt(cars),
-                    Long.parseUnsignedLong(freq));
+                    Long.parseUnsignedLong(freq),
+                    retained);
         } catch (IOException ex) {
             ex.printStackTrace();
             return null;
@@ -89,19 +99,22 @@ class RaceProperties {
     private final int teamCount;
     private final int carCount;
     private final long updateFrequency;
+    private final String retainedRange;
 
     private RaceProperties(
             String track,
             String topic,
             int teamCount,
             int carCount,
-            long updateFrequency) {
+            long updateFrequency,
+            String retainedRange) {
 
         this.topic = topic;
         this.track = track;
         this.teamCount = teamCount;
         this.carCount = carCount;
         this.updateFrequency = updateFrequency;
+        this.retainedRange = retainedRange;
     }
 
     String getTopic() {
@@ -123,5 +136,7 @@ class RaceProperties {
     long getUpdateFrequency() {
         return updateFrequency;
     }
+
+    String getRetainedRange() { return retainedRange; }
 }
 

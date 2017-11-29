@@ -55,6 +55,7 @@ public class Main {
         Race race = RaceBuilder.create()
                 .setDiffusionSession(session)
                 .setTopic(properties.getTopic())
+                .setRetainedRange(properties.getRetainedRange())
                 .setRaceTrack(properties.getTrack())
                 .setTeamCount(properties.getTeamCount())
                 .setCarCount(properties.getCarCount())
