@@ -11,10 +11,7 @@ import com.pushtechnology.diffusion.datatype.json.JSON;
 import com.pushtechnology.diffusion.datatype.json.JSONDataType;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -48,25 +45,7 @@ public class Race {
         timeSeries = session.feature(TimeSeries.class);
     }
 
-    private JSON createJSON() {
-        StringBuilder sb = new StringBuilder(cars.size() * 1024);
-        sb.append('[');
-
-        boolean first = true;
-        for (Car car : cars) {
-            if (first) {
-                first = false;
-            } else {
-                sb.append(',');
-            }
-            car.buildJSON(sb);
-        }
-
-        sb.append(']');
-        return JSON_DATA_TYPE.fromJsonString(sb.toString());
-    }
-
-    public void start() {
+    void start() {
         if ( !createTopics() ) {
             System.out.println("Failed to create topics");
             System.exit(42);
@@ -86,19 +65,42 @@ public class Race {
         while (true) {
             previous = current;
             current = System.nanoTime();
-
             tick += current - previous;
+
+            // TODO: Update cars based on time and speed and acceleration and location
 
             if ( tick >= nanoFrequency ) {
                 tick -= nanoFrequency;
 
+                // Update positions
+                ArrayList<Car> sorted = new ArrayList<>(cars);
+                // Collections.sort(sorted, );
                 for (Car car : cars) {
                     car.move(min + (max - min) * random.nextDouble());
                 }
 
+                // Send snapshot to Diffusion
                 timeSeries.append(topic + "/updates", JSON.class, createJSON());
             }
         }
+    }
+
+    private JSON createJSON() {
+        StringBuilder sb = new StringBuilder(cars.size() * 1024);
+        sb.append('[');
+
+        boolean first = true;
+        for (Car car : cars) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(',');
+            }
+            car.buildJSON(sb);
+        }
+
+        sb.append(']');
+        return JSON_DATA_TYPE.fromJsonString(sb.toString());
     }
 
     private boolean createTopics() {
@@ -151,7 +153,8 @@ public class Race {
 
             // Add time series topic for high-frequency car updates
             final TopicSpecification specification = topicControl.newSpecification(TopicType.TIME_SERIES)
-                    .withProperty(TopicSpecification.TIME_SERIES_EVENT_VALUE_TYPE, JSON_DATATYPE_NAME);
+                    .withProperty(TopicSpecification.TIME_SERIES_EVENT_VALUE_TYPE, JSON_DATATYPE_NAME)
+                    .withProperty(TopicSpecification.TIME_SERIES_RETAINED_RANGE, "last 600s");
 
             final String timeSeriesTopicName = topic + "/updates";
             topicControl.addTopic(timeSeriesTopicName, specification)
@@ -169,26 +172,4 @@ public class Race {
         }
         return false;
     }
-
-
-
-
-
-
-
-
-
-    public List<Team> getTeams() {
-        return Collections.unmodifiableList(teams);
-    }
-
-    public int getTeamCount() {
-        return teams.size();
-    }
-
-    public RaceTrack getTrack() {
-        return raceTrack;
-    }
-
-
 }
