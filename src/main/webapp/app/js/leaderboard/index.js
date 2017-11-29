@@ -6,8 +6,13 @@ app.controller('LeaderboardController', ['$scope', 'CarsModel', function($scope,
     };
 
     $scope.selectCar = function(car, team) {
-        console.log(car, team);
         CarsModel.selectCar(car, team);
+    };
+
+    $scope.selectedCar = function(car, team) {
+        var selected = CarsModel.getSelectedCar();
+        if (!selected) return false;
+        return selected.carid === car && selected.teamid === team;
     };
 
     $scope.getTeamName = CarsModel.getTeamName;
