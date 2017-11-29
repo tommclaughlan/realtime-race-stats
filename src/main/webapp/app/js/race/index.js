@@ -35,7 +35,7 @@ app.controller('RaceController', ['$scope', '$interval', 'TrackModel', 'Diffusio
 
                 val.forEach(function(team, i) {
                     team.forEach(function(car, j) {
-                        CarsModel.updateCarLocation(j, i, car.loc);
+                        CarsModel.updateCarPosition(j, i, car.pos);
                     });
                 });
 
