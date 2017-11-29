@@ -4,8 +4,7 @@ body {
 }
 
 canvas {
-    width : 100%;
-
+    width : 90%;
 }
 
 .table-active {
@@ -13,4 +12,13 @@ canvas {
 }
 .table-active:hover {
     background-color: #f47700 !important;
+}
+
+.scrubber-view {
+    height : 72px;
+    width : 100%;
+    padding : 16px;
+    position: fixed;
+    bottom: 0;
+    background-color: #f1f1f1;
 }

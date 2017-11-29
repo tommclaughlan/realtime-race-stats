@@ -15,6 +15,7 @@ app.factory('Diffusion', ['$state', function($state) {
     Diffusion.session = function() {
         if (!this._session || !this._session.isConnected()) {
             $state.go('connecting');
+            return false;
         }
         return this._session;
     };

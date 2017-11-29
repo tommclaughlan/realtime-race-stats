@@ -15,7 +15,15 @@ app.directive('leaderboard', function() {
     };
 });
 
-app.controller('RaceController', ['$scope', '$interval', 'TrackModel', 'Diffusion', 'CarsModel', function($scope, $interval, TrackModel, Diffusion, CarsModel) {
+app.directive('scrubber', function() {
+    return {
+        restrict : 'E',
+        templateUrl : 'views/scrubber.html',
+        controller : 'ClockController'
+    };
+});
+
+app.controller('RaceController', ['$scope', '$interval', 'TrackModel', 'Diffusion', 'CarsModel', 'ClockModel', function($scope, $interval, TrackModel, Diffusion, CarsModel, ClockModel) {
     $scope.getTrack = function() {
         return TrackModel.getPath();
     };
@@ -28,18 +36,22 @@ app.controller('RaceController', ['$scope', '$interval', 'TrackModel', 'Diffusio
         };
     };
 
-    Diffusion.session().stream('race/updates/fast').asType(Diffusion.datatypes.json())
-        .on('value', function(topic, spec, value) {
-            $scope.$apply(function() {
-                var val = value.value.get();
+    if (Diffusion.session()) {
+        Diffusion.session().stream('race/updates').asType(Diffusion.datatypes.json())
+            .on('value', function(topic, spec, value) {
+                $scope.$apply(function() {
+                    var val = value.value.get();
+                    var time = value.timestamp;
 
-                val.forEach(function(team, i) {
-                    team.forEach(function(car, j) {
-                        CarsModel.updateCarPosition(j, i, car.pos);
-                    });
+                    if (!ClockModel.isPaused() && TrackModel.properties) {
+                        val.forEach(function(car) {
+                            CarsModel.updateCarPosition(car.id, car.team, car.loc);
+                        });
+                    }
+                    ClockModel.setLiveTime(time);
+
                 });
-
             });
-        });
-    Diffusion.session().subscribe('race/updates/fast');
+        Diffusion.session().subscribe('race/updates');
+    }
 }]);
