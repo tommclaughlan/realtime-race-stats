@@ -1,11 +1,12 @@
 package com.pushtechnology.diffusion.demos;
 
-public class Car {
+public class Car implements Comparable<Car> {
     private final int id;
     private final int teamId;
     private final String driverName;
 
     private int lap = 1;
+    private int position = 0;
     private double location = 0.0;
 
     public Car(int id, int teamId, String driverName) {
@@ -34,6 +35,10 @@ public class Car {
         return lap;
     }
 
+    void setPosition(int position) {
+        this.position = position;
+    }
+
     void move(double amount) {
         location += amount;
         if ( location >= 1.0 ) {
@@ -51,6 +56,26 @@ public class Car {
                 .append(lap)
                 .append(",\"loc\":")
                 .append(location)
+                .append(",\"pos\":")
+                .append(position)
                 .append('}');
+    }
+
+    @Override
+    public int compareTo(Car o) {
+        if (lap > o.lap) {
+            return 1;
+        }
+        if (lap < o.lap) {
+            return -1;
+        }
+        // laps are equal so compare location
+        if (location > o.location) {
+            return 1;
+        }
+        if (location < o.location) {
+            return -1;
+        }
+        return 0; // Both are at the same position
     }
 }
