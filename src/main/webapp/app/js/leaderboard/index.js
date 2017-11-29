@@ -2,7 +2,9 @@ var app = require('angular').module('racing');
 
 app.controller('LeaderboardController', ['$scope', 'CarsModel', function($scope, CarsModel) {
     $scope.getOrderedCars = function() {
-        return CarsModel.getCars();
+        return CarsModel.getCars().sort(function(a, b) {
+            return a.pos - b.pos;
+        });
     };
 
     $scope.selectCar = function(car, team) {
@@ -12,7 +14,7 @@ app.controller('LeaderboardController', ['$scope', 'CarsModel', function($scope,
     $scope.selectedCar = function(car, team) {
         var selected = CarsModel.getSelectedCar();
         if (!selected) return false;
-        return selected.carid === car && selected.teamid === team;
+        return selected.id === car && selected.teamid === team;
     };
 
     $scope.getTeamName = CarsModel.getTeamName;

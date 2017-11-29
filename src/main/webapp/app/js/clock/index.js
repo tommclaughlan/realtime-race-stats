@@ -53,7 +53,7 @@ app.factory('ClockModel', function() {
     return ClockModel;
 });
 
-app.controller('ClockController', ['$scope', 'ClockModel', 'Diffusion', 'CarsModel', function($scope, ClockModel, Diffusion, CarsModel) {
+app.controller('ClockController', ['$scope', '$interval', 'ClockModel', 'Diffusion', 'CarsModel', function($scope, $interval, ClockModel, Diffusion, CarsModel) {
     $scope.togglePause = ClockModel.togglePause;
     $scope.isPaused = ClockModel.isPaused;
 
@@ -71,7 +71,11 @@ app.controller('ClockController', ['$scope', 'ClockModel', 'Diffusion', 'CarsMod
                 ClockModel.setLive(false);
                 ClockModel.setPaused(true);
             },
-            step : 1000
+            step : 10,
+            translate : function(value) {
+                var date = new Date(value);
+                return date.toLocaleTimeString();
+            }
         }
     };
 
@@ -83,14 +87,14 @@ app.controller('ClockController', ['$scope', 'ClockModel', 'Diffusion', 'CarsMod
             .selectFrom('race/updates').then(function(result) {
                 var val = result.events[0].value.get();
                 val.forEach(function(car) {
-                    CarsModel.updateCarPosition(car.id, car.team, car.loc);
+                    CarsModel.updateCarPosition(car);
                 });
             }, function(err) {
                 console.log(err);
             });
     };
 
-    if (Diffusion.session()) {
+    var setStart = function() {
         Diffusion.session().timeseries.rangeQuery()
             .fromStart()
             .next(1)
@@ -100,7 +104,7 @@ app.controller('ClockController', ['$scope', 'ClockModel', 'Diffusion', 'CarsMod
             }, function(err) {
                 console.log(err);
             });
-    }
+    };
 
     $scope.$watch(function() {
         return ClockModel.getStartTime() + ' ' + ClockModel.getLiveTime();
@@ -125,5 +129,8 @@ app.controller('ClockController', ['$scope', 'ClockModel', 'Diffusion', 'CarsMod
         }
     });
 
-
+    if (Diffusion.session()) {
+        $interval(setStart, 200);
+        setStart();
+    }
 }]);

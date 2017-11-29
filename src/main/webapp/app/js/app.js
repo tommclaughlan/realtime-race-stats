@@ -4,16 +4,18 @@ var angular = require('angular');
 
 require('@uirouter/angularjs');
 require('angularjs-slider');
+require('angularjs-gauge');
 
-var app = angular.module('racing', ['ui.router', 'rzModule']);
+var app = angular.module('racing', ['ui.router', 'rzModule', 'angularjs-gauge']);
 
 require('./diffusion');
+require('./connecting');
 require('./track');
 require('./race');
 require('./teams');
 require('./leaderboard');
 require('./clock');
-require('./connecting');
+require('./stats');
 
 app.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise('/connecting');

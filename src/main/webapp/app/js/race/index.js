@@ -23,6 +23,14 @@ app.directive('scrubber', function() {
     };
 });
 
+app.directive('statisticsPanel', function() {
+    return {
+        restrict : 'E',
+        templateUrl : 'views/stats.html',
+        controller : 'StatsController'
+    };
+});
+
 app.controller('RaceController', ['$scope', '$interval', 'TrackModel', 'Diffusion', 'CarsModel', 'ClockModel', function($scope, $interval, TrackModel, Diffusion, CarsModel, ClockModel) {
     $scope.getTrack = function() {
         return TrackModel.getPath();
@@ -45,7 +53,7 @@ app.controller('RaceController', ['$scope', '$interval', 'TrackModel', 'Diffusio
 
                     if (!ClockModel.isPaused() && TrackModel.properties) {
                         val.forEach(function(car) {
-                            CarsModel.updateCarPosition(car.id, car.team, car.loc);
+                            CarsModel.updateCarPosition(car);
                         });
                     }
                     ClockModel.setLiveTime(time);

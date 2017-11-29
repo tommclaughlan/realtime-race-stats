@@ -1,0 +1,19 @@
+<div ng-if="carSelected()">
+    <div class="card text-white bg-dark">
+        <div class="card-header">
+            {{getCar().name}} - {{getCar().team}}
+            <button class="btn btn-dark float-sm-right" ng-click="toggleStats()">
+                <i ng-if="!stats" class="icon-chart-line"></i>
+                <i ng-if="stats" class="icon-gauge"></i>
+            </button>
+        </div>
+        <div class="card-body" ng-if="!stats">
+            <ng-gauge class="dial" size="300" max="250" value="getCar().speed" thick="20" type="arch" label="Speed" append="kph" foreground-color="#f15500"></ng-gauge>
+        </div>
+        <div class="card-body" ng-if="stats">
+            <p>Max Speed: fast</p>
+            <p>Tyre pressure: stiff</p>
+            <p>Coffee in driver: plenty</p>
+        </div>
+    </div>
+</div>

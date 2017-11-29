@@ -65,7 +65,7 @@ app.directive('track', function() {
                 cars.forEach(function(car) {
                     ctx.beginPath();
                     ctx.fillStyle = car.colour;
-                    ctx.arc(car.pos.x, car.pos.y, 10, 0, 2*Math.PI);
+                    ctx.arc(car.loc.x, car.loc.y, 10, 0, 2*Math.PI);
                     ctx.fill();
                     if (car.selected) {
                         ctx.strokeStyle = '#f1f1f1';

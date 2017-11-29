@@ -4,13 +4,15 @@
             <th scope="col">Pos</th>
             <th scope="col">Name</th>
             <th scope="col">Team</th>
+            <th scope="col">Laps</th>
         </tr>
     </thead>
     <tbody>
-        <tr ng-repeat="car in getOrderedCars()" ng-click="selectCar(car.carid, car.teamid)" ng-class="{ 'table-active' : selectedCar(car.carid, car.teamid) }">
+        <tr ng-repeat="car in getOrderedCars()" ng-click="selectCar(car.id, car.teamid)" ng-class="{ 'table-active' : selectedCar(car.id, car.teamid) }">
             <th scope="row">{{ $index + 1}}</th>
             <th>{{car.name}}</th>
             <th>{{car.team}}</th>
+            <th>{{car.laps}}</th>
         </tr>
     </tbody>
 </table>

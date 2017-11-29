@@ -12,7 +12,7 @@ app.factory('CarsModel', ['Diffusion', 'TrackModel', function(Diffusion, TrackMo
         this.teams[team].cars[car] = { name : name, colour : this.colours[team] };
 
         this.cars = this.cars.filter(function(c) {
-            return !(c.carid === car && c.teamid === team);
+            return !(c.id === car && c.teamid === team);
         });
 
         this.cars.push({
@@ -20,8 +20,10 @@ app.factory('CarsModel', ['Diffusion', 'TrackModel', function(Diffusion, TrackMo
             colour : this.colours[team],
             team : this.teams[team].name,
             teamid : team,
-            carid : car,
-            pos : { x : 0, y : 0 },
+            id : car,
+            loc : { x : 0, y : 0 },
+            pos : this.cars.length,
+            speed : 120,
             selected : false
         });
     };
@@ -35,7 +37,7 @@ app.factory('CarsModel', ['Diffusion', 'TrackModel', function(Diffusion, TrackMo
 
     CarsModel.getCar = function(carid, teamid) {
         return CarsModel.cars.find(function(car) {
-            return car.carid === carid && car.teamid === teamid;
+            return car.id === carid && car.teamid === teamid;
         });
     };
 
@@ -43,14 +45,20 @@ app.factory('CarsModel', ['Diffusion', 'TrackModel', function(Diffusion, TrackMo
         return CarsModel.cars;
     };
 
-    CarsModel.updateCarPosition = function(car, team, position) {
-        var c = CarsModel.getCar(car, team);
-        var pos = TrackModel.getPositionAtLength(position);
-        c.pos = pos;
+    CarsModel.updateCarPosition = function(car) {
+        var id = car.id;
+        var team = car.team;
+        var location = car.loc;
+        var position = car.pos;
+        var laps = car.lap;
+        var speed = car.speed;
 
-        if (this.teams[team] && this.teams[team].cars[car]) {
-            this.teams[team].cars[car].position = position;
-        }
+        var c = CarsModel.getCar(id, team);
+        var loc = TrackModel.getPositionAtLength(location);
+        c.loc = loc;
+        c.pos = position;
+        c.laps = laps;
+        c.speed = speed;
     };
 
     CarsModel.getSelectedCar = function() {

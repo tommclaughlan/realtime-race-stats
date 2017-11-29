@@ -22,3 +22,21 @@ canvas {
     bottom: 0;
     background-color: #f1f1f1;
 }
+
+.dial > span {
+    left:0;
+}
+
+.dial > b {
+    left:0;
+}
+
+.btn-primary {
+    background-color: #f15500;
+    border-color: #f12200;
+}
+
+.btn-primary:hover, active, focus {
+    background-color: #f47700;
+    border-color: #f36600;
+}
