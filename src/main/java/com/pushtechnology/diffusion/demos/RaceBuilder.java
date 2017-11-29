@@ -1,5 +1,7 @@
 package com.pushtechnology.diffusion.demos;
 
+import com.pushtechnology.diffusion.client.session.Session;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -7,19 +9,33 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class RaceBuilder {
-    private final NameGenerator names;
+class RaceBuilder {
+    public static RaceBuilder create() {
+        final Randomiser randomiser;
+        try {
+            randomiser = new Randomiser();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
 
-    private long updateFrequency;
-    private int teamCount;
-    private int carCount;
-    private String trackFilename;
-
-    public RaceBuilder() throws IOException {
-        names = new NameGenerator();
+        return new RaceBuilder(randomiser);
     }
 
-    public RaceBuilder withTrack(String filename) {
+    private final Randomiser randomiser;
+
+    private long updateFrequency = 0;
+    private int teamCount = 0;
+    private int carCount = 0;
+    private String trackFilename = null;
+    private Session session = null;
+    private String topic = null;
+
+    private RaceBuilder(Randomiser randomiser) {
+        this.randomiser = randomiser;
+    }
+
+    RaceBuilder setRaceTrack(String filename) {
         if (filename == null) {
             throw new IllegalArgumentException("No track file specified.");
         }
@@ -27,18 +43,18 @@ public class RaceBuilder {
         return this;
     }
 
-    public RaceBuilder withTeams(int count) {
+    RaceBuilder setTeamCount(int count) {
         if (count < 1) {
             throw new IllegalArgumentException("Need at least 1 team.");
         }
-        if (count > names.getTeamNameCount()) {
+        if (count > randomiser.getTeamNameCount()) {
             throw new IllegalArgumentException("Not enough team names provided.");
         }
         teamCount = count;
         return this;
     }
 
-    public RaceBuilder withTeamCars(int count) {
+    RaceBuilder setCarCount(int count) {
         if (count < 1) {
             throw new IllegalArgumentException("Need at least 1 car per team.");
         }
@@ -46,9 +62,38 @@ public class RaceBuilder {
         return this;
     }
 
-    public Race Build() throws IOException {
-        if (teamCount <= 0 || carCount <= 0 || trackFilename == null) {
-            // TODO: Throw exception in here...
+    RaceBuilder setUpdateFrequency(long frequency) {
+        if (frequency < 1) {
+            throw new IllegalArgumentException("Minimum update frequency is 1ms.");
+        }
+        updateFrequency = frequency;
+        return this;
+    }
+
+    RaceBuilder setDiffusionSession(Session session) {
+        if (session == null) {
+            throw new IllegalArgumentException("Session can't be null");
+        }
+        this.session = session;
+        return this;
+    }
+
+    RaceBuilder setTopic(String topic) {
+        if (topic == null) {
+            throw new IllegalArgumentException("Topic can't be null");
+        }
+        this.topic = topic;
+        return this;
+    }
+
+    public Race Build() {
+        if (updateFrequency <= 0
+                || teamCount <= 0
+                || carCount <= 0
+                || trackFilename == null
+                || session == null
+                || topic == null) {
+            return null;
         }
 
         ArrayList<Team> teams = new ArrayList<>(teamCount);
@@ -56,17 +101,23 @@ public class RaceBuilder {
 
             ArrayList<Car> cars = new ArrayList<>(carCount);
             for (int iCar = 0; iCar < carCount; iCar += 1) {
-                cars.add(new Car(iCar, names.getNextDriverName()));
+                cars.add(new Car(iCar, iTeam, randomiser.getNextDriverName()));
             }
 
-            teams.add(new Team(iTeam, names.getNextTeamName(), cars));
+            teams.add(new Team(iTeam, randomiser.getNextTeamName(), cars));
         }
 
-        RaceTrack track = new RaceTrack(trackFilename);
-        return new Race(track, teams);
+        RaceTrack track = null;
+        try {
+            track = new RaceTrack(trackFilename);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return new Race(updateFrequency, session, track, topic, teams);
     }
 
-    private class NameGenerator {
+    private static class Randomiser {
         private void readNames(String filename, ArrayList<String> list) throws IOException {
             ClassLoader classLoader = getClass().getClassLoader();
 
@@ -86,18 +137,16 @@ public class RaceBuilder {
         private final ArrayList<String> teamNames = new ArrayList<>();
         private final Random random = new Random(Instant.now().toEpochMilli());
 
-        private NameGenerator() throws IOException {
+        private Randomiser() throws IOException {
             readNames("names/first.names", firstNames);
             readNames("names/last.names", lastNames);
             readNames("names/team.names", teamNames);
         }
 
         public String getNextDriverName() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(firstNames.get(random.nextInt(firstNames.size())));
-            sb.append(' ');
-            sb.append(lastNames.get(random.nextInt(lastNames.size())));
-            return sb.toString();
+            return firstNames.get(random.nextInt(firstNames.size())) +
+                    ' ' +
+                    lastNames.get(random.nextInt(lastNames.size()));
         }
 
         public String getNextTeamName() {
@@ -112,7 +161,7 @@ public class RaceBuilder {
             return name;
         }
 
-        public int getTeamNameCount() {
+        int getTeamNameCount() {
             return teamNames.size();
         }
     }

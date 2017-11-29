@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class RaceProperties {
-    public static RaceProperties load() {
+class RaceProperties {
+    static RaceProperties load() {
         Properties properties = new Properties();
         InputStream inputStream = null;
 
@@ -54,8 +54,18 @@ public class RaceProperties {
                 System.out.println("Update frequency: " + freq + "ms");
             }
 
+            // Read topic
+            String topic = properties.getProperty("topic");
+            if (topic == null) {
+                System.out.println("No topic defined!");
+                return null;
+            } else {
+                System.out.println("Topic: " + topic);
+            }
+
             return new RaceProperties(
                     track,
+                    topic,
                     Integer.parseUnsignedInt(teams),
                     Integer.parseUnsignedInt(cars),
                     Long.parseUnsignedLong(freq));
@@ -74,6 +84,7 @@ public class RaceProperties {
         }
     }
 
+    private final String topic;
     private final String track;
     private final int teamCount;
     private final int carCount;
@@ -81,29 +92,36 @@ public class RaceProperties {
 
     private RaceProperties(
             String track,
+            String topic,
             int teamCount,
             int carCount,
-            long updateFrequency ) {
+            long updateFrequency) {
 
+        this.topic = topic;
         this.track = track;
         this.teamCount = teamCount;
         this.carCount = carCount;
         this.updateFrequency = updateFrequency;
     }
 
-    public String getTrack() {
+    String getTopic() {
+        return topic;
+    }
+
+    String getTrack() {
         return track;
     }
 
-    public int getTeamCount() {
+    int getTeamCount() {
         return teamCount;
     }
 
-    public int getCarCount() {
+    int getCarCount() {
         return carCount;
     }
 
-    public long getUpdateFrequency() {
+    long getUpdateFrequency() {
         return updateFrequency;
     }
 }
+
