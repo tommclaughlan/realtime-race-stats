@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class RaceTrack {
-    private static Part loadPart( JsonParser parser ) throws IOException {
+    private static Part loadPart( JsonParser parser, double location ) throws IOException {
         if (parser.nextToken() != JsonToken.FIELD_NAME) {
             throw new IllegalArgumentException(); // TODO: throw something else
         }
@@ -41,35 +41,45 @@ public class RaceTrack {
             throw new IllegalArgumentException(); // TODO: throw something else
         }
 
-        return new Part(type, length);
+        return new Part(type, length, location);
     }
 
     private final String trackFile;
+    private final ArrayList<Part> parts = new ArrayList<>();
+    private final double length;
 
-    public RaceTrack( String filename ) throws IOException {
+    RaceTrack( String filename ) throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
 
-        final ArrayList<Part> parts = new ArrayList<>();
-        try( JsonParser parser = new JsonFactory().createParser( classLoader.getResource(filename) )) {
-            while ( parser.nextToken() != JsonToken.END_OBJECT ) {
+        double len = 0.0;
+        try (JsonParser parser = new JsonFactory().createParser(classLoader.getResource(filename))) {
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
                 if (Objects.equals(parser.getCurrentName(), "parts")) {
                     // We found parts so load them
-                    if ( parser.nextToken() != JsonToken.START_ARRAY  ) {
+                    if (parser.nextToken() != JsonToken.START_ARRAY) {
                         throw new IllegalArgumentException(); // TODO: throw something else
                     }
-                    while ( parser.nextToken() == JsonToken.START_OBJECT ) {
-                        parts.add(loadPart( parser ));
+                    while (parser.nextToken() == JsonToken.START_OBJECT) {
+                        Part part = loadPart(parser, len);
+                        len += part.length;
+                        parts.add(part);
                     }
                     break;
                 }
             }
         }
 
+        System.out.println("Track length: " + len);
+        length = len;
         trackFile = filename;
     }
 
-    public String getFileName() {
+    String getFileName() {
         return trackFile;
+    }
+
+    double getLength() {
+        return length;
     }
 
     private static class Part {
@@ -78,12 +88,14 @@ public class RaceTrack {
             CURVED,
         }
 
+        private final double location;
         private final double length;
         private final TYPE type;
 
-        public Part( TYPE type, double length ) {
+        Part(TYPE type, double length, double location) {
             this.type = type;
             this.length = length;
+            this.location = location;
         }
 
         public TYPE getType() {
@@ -92,6 +104,10 @@ public class RaceTrack {
 
         public double getLength() {
             return length;
+        }
+
+        public double getLocation() {
+            return location;
         }
     }
 }
