@@ -4,15 +4,28 @@ public class Car implements Comparable<Car> {
     private final int id;
     private final int teamId;
     private final String driverName;
+    private final double maxSpeed;
+    private final double acceleration;
+    private final double deceleration;
 
     private int lap = 1;
     private int position = 0;
     private double location = 0.0;
 
-    public Car(int id, int teamId, String driverName) {
+    public Car(
+            int id,
+            int teamId,
+            String driverName,
+            double maxSpeed,
+            double acceleration,
+            double deceleration ) {
+
         this.id = id;
         this.teamId = teamId;
         this.driverName = driverName;
+        this.maxSpeed = maxSpeed;
+        this.acceleration = acceleration;
+        this.deceleration = deceleration;
     }
 
     String getDriverName() {

@@ -33,6 +33,9 @@ class RaceBuilder {
     private Session session = null;
     private String topic = null;
     private String retainedRange = null;
+    private DoubleRange speedRange = null;
+    private DoubleRange accelerationRange = null;
+    private DoubleRange decelerationRange = null;
 
     private RaceBuilder(Randomiser randomiser) {
         this.randomiser = randomiser;
@@ -91,9 +94,33 @@ class RaceBuilder {
 
     RaceBuilder setRetainedRange(String retainedRange) {
         if (retainedRange == null) {
-            throw new IllegalArgumentException("Retained Range can't be null.");
+            throw new IllegalArgumentException("Retained DoubleRange can't be null.");
         }
         this.retainedRange = retainedRange;
+        return this;
+    }
+
+    RaceBuilder setSpeedRange(DoubleRange range) {
+        if (range == null) {
+            throw new IllegalArgumentException("Speed range can't be null.");
+        }
+        this.speedRange = range;
+        return this;
+    }
+
+    RaceBuilder setAccelerationRange(DoubleRange range) {
+        if (range == null) {
+            throw new IllegalArgumentException("Acceleration range can't be null.");
+        }
+        this.accelerationRange = range;
+        return this;
+    }
+
+    RaceBuilder setDecelerationRange(DoubleRange range) {
+        if (range == null) {
+            throw new IllegalArgumentException("Deceleration range can't be null.");
+        }
+        this.decelerationRange = range;
         return this;
     }
 
@@ -104,7 +131,10 @@ class RaceBuilder {
                 || trackFilename == null
                 || session == null
                 || topic == null
-                || retainedRange == null) {
+                || retainedRange == null
+                || speedRange == null
+                || accelerationRange == null
+                || decelerationRange == null) {
             return null;
         }
 
@@ -113,7 +143,14 @@ class RaceBuilder {
 
             ArrayList<Car> cars = new ArrayList<>(carCount);
             for (int iCar = 0; iCar < carCount; iCar += 1) {
-                cars.add(new Car(iCar, iTeam, randomiser.getNextDriverName()));
+                Car car = new Car(
+                        iCar,
+                        iTeam,
+                        randomiser.getNextDriverName(),
+                        randomiser.fromRange(speedRange),
+                        randomiser.fromRange(accelerationRange),
+                        randomiser.fromRange(decelerationRange));
+                cars.add(car);
             }
 
             teams.add(new Team(iTeam, randomiser.getNextTeamName(), cars));
@@ -162,13 +199,13 @@ class RaceBuilder {
             readNames("names/team.names", teamNames);
         }
 
-        public String getNextDriverName() {
+        String getNextDriverName() {
             return firstNames.get(random.nextInt(firstNames.size())) +
                     ' ' +
                     lastNames.get(random.nextInt(lastNames.size()));
         }
 
-        public String getNextTeamName() {
+        String getNextTeamName() {
             if (teamNames.size() == 0) {
                 return null;
             }
@@ -178,6 +215,10 @@ class RaceBuilder {
             String name = teamNames.get(index);
             teamNames.remove(index);
             return name;
+        }
+
+        double fromRange(DoubleRange range) {
+            return random.doubles(1, range.getMin(), range.getMax()).toArray()[0];
         }
 
         int getTeamNameCount() {

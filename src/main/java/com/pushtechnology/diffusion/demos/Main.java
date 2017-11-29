@@ -60,6 +60,9 @@ public class Main {
                 .setTeamCount(properties.getTeamCount())
                 .setCarCount(properties.getCarCount())
                 .setUpdateFrequency(properties.getUpdateFrequency())
+                .setSpeedRange(properties.getSpeed())
+                .setAccelerationRange(properties.getAcceleration())
+                .setDecelerationRange(properties.getDeceleration())
                 .Build();
         if (race == null) {
             System.out.println("ERROR: Failed to create race!");

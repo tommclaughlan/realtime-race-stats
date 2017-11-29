@@ -69,7 +69,37 @@ class RaceProperties {
                 System.out.println("No retained range for time series defined!");
                 return null;
             } else {
-                System.out.println("Time Series Retained Range: " + retained);
+                System.out.println("Time Series Retained DoubleRange: " + retained);
+            }
+
+            // Read speed range
+            String minspeed = properties.getProperty("minspeed");
+            String maxspeed = properties.getProperty("maxspeed");
+            if (minspeed == null || maxspeed == null) {
+                System.out.println("Speed range not specified!");
+                return null;
+            } else {
+                System.out.println("Speed range: " + minspeed + "km/h to " + maxspeed + "km/h");
+            }
+
+            // Read acceleration range
+            String minacceleration = properties.getProperty("minacceleration");
+            String maxacceleration = properties.getProperty("maxacceleration");
+            if (minacceleration == null || maxacceleration == null) {
+                System.out.println("Acceleration range not specified!");
+                return null;
+            } else {
+                System.out.println("Acceleration range: " + minacceleration + "m/s^2 to " + maxacceleration + "m/s^2");
+            }
+
+            // Read deceleration range
+            String mindeceleration = properties.getProperty("mindeceleration");
+            String maxdeceleration = properties.getProperty("maxdeceleration");
+            if (mindeceleration == null || maxdeceleration == null) {
+                System.out.println("Deceleration range not specified!");
+                return null;
+            } else {
+                System.out.println("Deceleration range: " + mindeceleration + "m/s^2 to " + maxdeceleration + "m/s^2");
             }
 
             return new RaceProperties(
@@ -78,7 +108,10 @@ class RaceProperties {
                     Integer.parseUnsignedInt(teams),
                     Integer.parseUnsignedInt(cars),
                     Long.parseUnsignedLong(freq),
-                    retained);
+                    retained,
+                    new DoubleRange(Double.parseDouble(minspeed),Double.parseDouble(maxspeed)),
+                    new DoubleRange(Double.parseDouble(minacceleration),Double.parseDouble(maxacceleration)),
+                    new DoubleRange(Double.parseDouble(mindeceleration),Double.parseDouble(maxdeceleration)));
         } catch (IOException ex) {
             ex.printStackTrace();
             return null;
@@ -100,6 +133,9 @@ class RaceProperties {
     private final int carCount;
     private final long updateFrequency;
     private final String retainedRange;
+    private final DoubleRange speed;
+    private final DoubleRange acceleration;
+    private final DoubleRange deceleration;
 
     private RaceProperties(
             String track,
@@ -107,7 +143,10 @@ class RaceProperties {
             int teamCount,
             int carCount,
             long updateFrequency,
-            String retainedRange) {
+            String retainedRange,
+            DoubleRange speed,
+            DoubleRange acceleration,
+            DoubleRange deceleration) {
 
         this.topic = topic;
         this.track = track;
@@ -115,6 +154,9 @@ class RaceProperties {
         this.carCount = carCount;
         this.updateFrequency = updateFrequency;
         this.retainedRange = retainedRange;
+        this.speed = speed;
+        this.acceleration = acceleration;
+        this.deceleration = deceleration;
     }
 
     String getTopic() {
@@ -138,5 +180,11 @@ class RaceProperties {
     }
 
     String getRetainedRange() { return retainedRange; }
+
+    DoubleRange getSpeed() { return speed; }
+
+    DoubleRange getAcceleration() { return acceleration; }
+
+    DoubleRange getDeceleration() { return deceleration; }
 }
 
