@@ -76,11 +76,18 @@ public class Race {
             if ( tick >= nanoFrequency ) {
                 tick -= nanoFrequency;
 
-                // Update positions
-
-                // Collections.sort(sorted, );
+                // TODO: remove this
                 for (Car car : cars) {
                     car.move(min + (max - min) * random.nextDouble());
+                }
+
+                // Update positions
+                Collections.sort(sorted);
+
+                int position = sorted.size();
+                for (Car car : sorted ) {
+                    car.setPosition( position );
+                    position -= 1;
                 }
 
                 // Send snapshot to Diffusion
