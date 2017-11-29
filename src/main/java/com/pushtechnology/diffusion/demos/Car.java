@@ -41,7 +41,7 @@ public class Car implements Comparable<Car> {
         this.position = position;
     }
 
-    void move(long elapsed) {
+    void move(RaceTrack track, long elapsed) {
         double elapsedSeconds = ((double)elapsed / 1000000000.0);
 
         // Accelerate
@@ -52,7 +52,7 @@ public class Car implements Comparable<Car> {
         }
 
         // Move ahead
-        location += currentSpeed * elapsedSeconds;
+        location += ( currentSpeed * elapsedSeconds ) / track.getLength();
         if ( location >= 1.0 ) {
             location -= 1.0;
             lap += 1;

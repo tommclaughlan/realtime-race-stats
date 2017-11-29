@@ -72,7 +72,7 @@ public class Race {
             tick += current - previous;
 
             for (Car car : cars) {
-                car.move(tick);
+                car.move(raceTrack, tick);
             }
 
             if ( tick >= nanoFrequency ) {
