@@ -34,6 +34,7 @@ class RaceBuilder {
     private String topic = null;
     private String retainedRange = null;
     private DoubleRange speedRange = null;
+    private DoubleRange corneringRange = null;
     private DoubleRange accelerationRange = null;
     private DoubleRange decelerationRange = null;
 
@@ -108,6 +109,14 @@ class RaceBuilder {
         return this;
     }
 
+    RaceBuilder setCorneringRange(DoubleRange range) {
+        if (range == null) {
+            throw new IllegalArgumentException("Cornering range can't be null.");
+        }
+        this.corneringRange = range;
+        return this;
+    }
+
     RaceBuilder setAccelerationRange(DoubleRange range) {
         if (range == null) {
             throw new IllegalArgumentException("Acceleration range can't be null.");
@@ -133,6 +142,7 @@ class RaceBuilder {
                 || topic == null
                 || retainedRange == null
                 || speedRange == null
+                || corneringRange == null
                 || accelerationRange == null
                 || decelerationRange == null) {
             return null;
@@ -148,6 +158,7 @@ class RaceBuilder {
                         iTeam,
                         randomiser.getNextDriverName(),
                         randomiser.fromRange(speedRange),
+                        randomiser.fromRange(corneringRange),
                         randomiser.fromRange(accelerationRange),
                         randomiser.fromRange(decelerationRange));
                 cars.add(car);

@@ -62,17 +62,20 @@ public class Race {
         long current = System.nanoTime();
         long previous = current;
         long tick = 0;
-
+        long elapsed = 0;
+        double elapsedSeconds = 0.0;
         double min = 0.001;
         double max = 0.01;
 
         while (true) {
             previous = current;
             current = System.nanoTime();
-            tick += current - previous;
+            elapsed = current - previous;
+            tick += elapsed;
 
             for (Car car : cars) {
-                car.move(raceTrack, current - previous);
+                // Run car simulation
+                car.move(raceTrack, elapsed);
             }
 
             if ( tick >= nanoFrequency ) {

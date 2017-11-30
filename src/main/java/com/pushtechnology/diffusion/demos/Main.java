@@ -61,6 +61,7 @@ public class Main {
                 .setCarCount(properties.getCarCount())
                 .setUpdateFrequency(properties.getUpdateFrequency())
                 .setSpeedRange(properties.getSpeed())
+                .setCorneringRange(properties.getCornering())
                 .setAccelerationRange(properties.getAcceleration())
                 .setDecelerationRange(properties.getDeceleration())
                 .Build();

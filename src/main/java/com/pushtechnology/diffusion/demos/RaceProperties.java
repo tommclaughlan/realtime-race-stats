@@ -82,6 +82,16 @@ class RaceProperties {
                 System.out.println("Speed range: " + minspeed + "km/h to " + maxspeed + "km/h");
             }
 
+            // Read speed range
+            String mincornering = properties.getProperty("mincornering");
+            String maxcornering = properties.getProperty("maxcornering");
+            if (mincornering == null || maxcornering == null) {
+                System.out.println("Cornering range not specified!");
+                return null;
+            } else {
+                System.out.println("Cornering range: " + mincornering + "km/h to " + maxcornering + "km/h");
+            }
+
             // Read acceleration range
             String minacceleration = properties.getProperty("minacceleration");
             String maxacceleration = properties.getProperty("maxacceleration");
@@ -110,6 +120,7 @@ class RaceProperties {
                     Long.parseUnsignedLong(freq),
                     retained,
                     new DoubleRange(Double.parseDouble(minspeed),Double.parseDouble(maxspeed)),
+                    new DoubleRange(Double.parseDouble(mincornering), Double.parseDouble(maxcornering)),
                     new DoubleRange(Double.parseDouble(minacceleration),Double.parseDouble(maxacceleration)),
                     new DoubleRange(Double.parseDouble(mindeceleration),Double.parseDouble(maxdeceleration)));
         } catch (IOException ex) {
@@ -134,6 +145,7 @@ class RaceProperties {
     private final long updateFrequency;
     private final String retainedRange;
     private final DoubleRange speed;
+    private final DoubleRange cornering;
     private final DoubleRange acceleration;
     private final DoubleRange deceleration;
 
@@ -145,6 +157,7 @@ class RaceProperties {
             long updateFrequency,
             String retainedRange,
             DoubleRange speed,
+            DoubleRange cornering,
             DoubleRange acceleration,
             DoubleRange deceleration) {
 
@@ -155,6 +168,7 @@ class RaceProperties {
         this.updateFrequency = updateFrequency;
         this.retainedRange = retainedRange;
         this.speed = speed;
+        this.cornering = cornering;
         this.acceleration = acceleration;
         this.deceleration = deceleration;
     }
@@ -182,6 +196,8 @@ class RaceProperties {
     String getRetainedRange() { return retainedRange; }
 
     DoubleRange getSpeed() { return speed; }
+
+    DoubleRange getCornering() { return cornering; }
 
     DoubleRange getAcceleration() { return acceleration; }
 

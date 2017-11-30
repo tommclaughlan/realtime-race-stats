@@ -5,6 +5,7 @@ public class Car implements Comparable<Car> {
     private final int teamId;
     private final String driverName;
     private final double maxSpeed;
+    private final double cornering;
     private final double acceleration;
     private final double deceleration;
 
@@ -18,13 +19,15 @@ public class Car implements Comparable<Car> {
             int teamId,
             String driverName,
             double maxSpeed,
+            double cornering,
             double acceleration,
             double deceleration ) {
 
         this.id = id;
         this.teamId = teamId;
         this.driverName = driverName;
-        this.maxSpeed = maxSpeed / 3.6; // hm/h to m/s
+        this.maxSpeed = maxSpeed / 3.6; // km/h to m/s
+        this.cornering = cornering / 3.6; // km/h to m/s
         this.acceleration = acceleration;
         this.deceleration = deceleration;
     }
@@ -37,6 +40,8 @@ public class Car implements Comparable<Car> {
         return id;
     }
 
+    double getLocation() { return location; }
+
     void setPosition(int position) {
         this.position = position;
     }
@@ -44,8 +49,24 @@ public class Car implements Comparable<Car> {
     void move(RaceTrack track, long elapsed) {
         double elapsedSeconds = ((double)elapsed / 1000000000.0);
 
+        double deltaSpeed;
+        double speedCap;
+
+        // Are we in a corner?
+        if ( track.inCorner( this ) ) {
+            speedCap = cornering;
+        } else {
+            speedCap = maxSpeed;
+        }
+
+        if ( speedCap - currentSpeed < 0.0 ) {
+            deltaSpeed = -deceleration;
+        } else {
+            deltaSpeed = acceleration;
+        }
+
         // Accelerate
-        currentSpeed += acceleration * elapsedSeconds;
+        currentSpeed += deltaSpeed * elapsedSeconds;
         if ( currentSpeed > maxSpeed ) {
             // Cap to max speed
             currentSpeed = maxSpeed;
@@ -57,6 +78,8 @@ public class Car implements Comparable<Car> {
             location -= 1.0;
             lap += 1;
         }
+
+
     }
 
     void buildJSON(StringBuilder sb) {

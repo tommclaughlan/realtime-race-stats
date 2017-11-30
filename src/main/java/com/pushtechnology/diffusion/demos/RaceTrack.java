@@ -82,6 +82,21 @@ public class RaceTrack {
         return length;
     }
 
+    boolean inCorner( Car car ) {
+        final double location = car.getLocation() * length;
+
+        // Find segment this car is in
+        for ( Part part : parts ) {
+            if ( location >= part.location
+                    && location <= part.location + part.length ) {
+
+                return part.type == Part.TYPE.CURVED;
+            }
+        }
+        // TODO: THROW because the car is outside of the track
+        return false;
+    }
+
     private static class Part {
         private enum TYPE {
             STRAIGHT,
