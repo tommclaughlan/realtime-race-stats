@@ -8,10 +8,24 @@ canvas {
 }
 
 .table-active {
-    background-color: #f15500;
+    background-color: #f15500 !important;
 }
 .table-active:hover {
     background-color: #f47700 !important;
+}
+
+.table-height {
+    max-height: 80vh !important;
+    overflow: auto;
+}
+
+.table-short {
+    max-height: 40vh !important;
+    overflow: auto;
+}
+
+.table {
+    white-space: nowrap;
 }
 
 .scrubber-view {
@@ -39,4 +53,61 @@ canvas {
 .btn-primary:hover, active, focus {
     background-color: #f47700;
     border-color: #f36600;
+}
+
+.board-position {
+    font-weight: bold;
+    border-right-width: 12px;
+    border-right-style: solid;
+    text-align: center;
+    width: 0px;
+    background-color: #676767;
+}
+
+.lap-green {
+    border-right-color: #00b956 !important;
+}
+
+.lap-red {
+    border-right-color: #f64d3c !important;
+}
+
+.col-cc0066 {
+    border-right-color: #cc0066 !important;
+}
+
+.col-00aaef {
+    border-right-color: #00aaef !important;
+}
+
+.col-00b956 {
+    border-right-color: #00b956 !important;
+}
+
+.col-ffc600 {
+    border-right-color: #ffc600 !important;
+}
+
+.col-f64d3c {
+    border-right-color: #f64d3c !important;
+}
+
+.col-3a3335 {
+    border-right-color: #3a3335 !important;
+}
+
+.col-fdf0d5 {
+    border-right-color: #fdf0d5 !important;
+}
+
+.col-eb5e55 {
+    border-right-color: #eb5e55 !important;
+}
+
+.col-710627 {
+    border-right-color: #710627 !important;
+}
+
+.col-2f1847 {
+    border-right-color: #2f1847 !important;
 }
