@@ -1,5 +1,7 @@
 package com.pushtechnology.diffusion.demos;
 
+import java.util.HashSet;
+
 public class Car implements Comparable<Car> {
     private final int id;
     private final int teamId;
@@ -8,11 +10,15 @@ public class Car implements Comparable<Car> {
     private final double cornering;
     private final double acceleration;
     private final double deceleration;
+    private final HashSet<Double> lapTimes;
 
     private int lap = 1;
     private int position = 0;
     private double location = 0.0;
     private double currentSpeed = 0.0;
+    private double previousLapTime = 0.0;
+    private double currentLapTime = 0.0;
+    private double lapDifference = 0.0;
 
     public Car(
             int id,
@@ -30,6 +36,8 @@ public class Car implements Comparable<Car> {
         this.cornering = cornering / 3.6; // km/h to m/s
         this.acceleration = acceleration;
         this.deceleration = deceleration;
+
+        this.lapTimes = new HashSet<>();
     }
 
     String getDriverName() {
@@ -66,9 +74,22 @@ public class Car implements Comparable<Car> {
 
     void move(double trackLength, double elapsedSeconds) {
         location += ( currentSpeed * elapsedSeconds ) / trackLength;
+        currentLapTime += elapsedSeconds;
+
         if ( location >= 1.0 ) {
             location -= 1.0;
             lap += 1;
+
+            // Account for overshoot in lap times
+            double overhead = ( ( location * trackLength ) / currentSpeed );
+            currentLapTime -= overhead;
+            if ( previousLapTime != 0.0 ) {
+                lapDifference = currentLapTime - previousLapTime;
+            }
+            previousLapTime = currentLapTime;
+            currentLapTime = overhead;
+
+            lapTimes.add(previousLapTime);
         }
     }
 
@@ -85,6 +106,12 @@ public class Car implements Comparable<Car> {
                 .append(position)
                 .append(",\"speed\":")
                 .append((int)(currentSpeed * 3.6)) //m/s to km/h
+                .append(",\"t\":")
+                .append(currentLapTime)
+                .append(",\"pt\":")
+                .append(previousLapTime)
+                .append(",\"td\":")
+                .append(lapDifference)
                 .append('}');
     }
 
