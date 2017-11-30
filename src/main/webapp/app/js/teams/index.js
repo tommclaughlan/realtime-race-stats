@@ -5,7 +5,18 @@ app.factory('CarsModel', ['Diffusion', 'TrackModel', function(Diffusion, TrackMo
         teams : [],
         cars : [],
         toDraw : [],
-        colours : ['#cc0066', '#00aeef', '#00b956', '#ffc600', '#f64d3c']
+        colours : [
+            'cc0066', // Reappt pink
+            '00aaef', // Diffusion blue
+            '00b956', // Green
+            'ffc600', // Yellow
+            'f64d3c', // Red
+            '3a3335', // Jet
+            'fdf0d5', // Papaya Whip
+            'eb5e55', // Sunset Orange
+            '710627', // Burgundy
+            '2f1847'  // Russian Violet
+        ],
     };
 
     CarsModel.addCar = function(car, name, team) {
@@ -17,7 +28,8 @@ app.factory('CarsModel', ['Diffusion', 'TrackModel', function(Diffusion, TrackMo
 
         this.cars.push({
             name : name,
-            colour : this.colours[team],
+            colour : '#' + this.colours[team],
+            class : 'col-' + this.colours[team],
             team : this.teams[team].name,
             teamid : team,
             id : car,
@@ -52,6 +64,9 @@ app.factory('CarsModel', ['Diffusion', 'TrackModel', function(Diffusion, TrackMo
         var position = car.pos;
         var laps = car.lap;
         var speed = car.speed;
+        var lap = car.t;
+        var last_lap = car.pt;
+        var lap_delta = car.td;
 
         var c = CarsModel.getCar(id, team);
         var loc = TrackModel.getPositionAtLength(location);
@@ -59,6 +74,9 @@ app.factory('CarsModel', ['Diffusion', 'TrackModel', function(Diffusion, TrackMo
         c.pos = position;
         c.laps = laps;
         c.speed = speed;
+        c.lap = lap;
+        c.last_lap = last_lap;
+        c.lap_delta = lap_delta;
     };
 
     CarsModel.getSelectedCar = function() {
@@ -72,6 +90,10 @@ app.factory('CarsModel', ['Diffusion', 'TrackModel', function(Diffusion, TrackMo
             CarsModel.getSelectedCar().selected = false;
         }
         CarsModel.getCar(i, j).selected = true;
+    };
+
+    CarsModel.unselectCar = function(i, j) {
+        CarsModel.getCar(i, j).selected = false;
     };
 
     return CarsModel;

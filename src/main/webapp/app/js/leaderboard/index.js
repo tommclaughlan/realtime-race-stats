@@ -8,7 +8,13 @@ app.controller('LeaderboardController', ['$scope', 'CarsModel', function($scope,
     };
 
     $scope.selectCar = function(car, team) {
-        CarsModel.selectCar(car, team);
+        var sel = CarsModel.getSelectedCar();
+        if (sel && sel.id === car && sel.teamid === team) {
+            CarsModel.unselectCar(car, team);
+        }
+        else {
+            CarsModel.selectCar(car, team);
+        }
     };
 
     $scope.selectedCar = function(car, team) {
@@ -17,5 +23,11 @@ app.controller('LeaderboardController', ['$scope', 'CarsModel', function($scope,
         return selected.id === car && selected.teamid === team;
     };
 
+    $scope.carSelected = function() {
+        return !!CarsModel.getSelectedCar();
+    };
+
     $scope.getTeamName = CarsModel.getTeamName;
+
+    $scope.getTeamClass = CarsModel.getTeamClass;
 }]);
