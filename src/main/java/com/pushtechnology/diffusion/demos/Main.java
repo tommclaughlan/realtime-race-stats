@@ -64,6 +64,7 @@ public class Main {
                 .setCorneringRange(properties.getCornering())
                 .setAccelerationRange(properties.getAcceleration())
                 .setDecelerationRange(properties.getDeceleration())
+                .setReactionRange(properties.getReaction())
                 .Build();
         if (race == null) {
             System.out.println("ERROR: Failed to create race!");

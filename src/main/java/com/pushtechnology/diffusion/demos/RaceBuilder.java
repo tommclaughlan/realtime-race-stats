@@ -37,6 +37,7 @@ class RaceBuilder {
     private DoubleRange corneringRange = null;
     private DoubleRange accelerationRange = null;
     private DoubleRange decelerationRange = null;
+    private DoubleRange reactionRange = null;
 
     private RaceBuilder(Randomiser randomiser) {
         this.randomiser = randomiser;
@@ -133,6 +134,14 @@ class RaceBuilder {
         return this;
     }
 
+    RaceBuilder setReactionRange(DoubleRange range) {
+        if (range == null) {
+            throw new IllegalArgumentException("Reaction range can't be null.");
+        }
+        this.reactionRange = range;
+        return this;
+    }
+
     public Race Build() {
         if (updateFrequency <= 0
                 || teamCount <= 0
@@ -144,7 +153,8 @@ class RaceBuilder {
                 || speedRange == null
                 || corneringRange == null
                 || accelerationRange == null
-                || decelerationRange == null) {
+                || decelerationRange == null
+                || reactionRange == null) {
             return null;
         }
 
@@ -175,7 +185,15 @@ class RaceBuilder {
             return null;
         }
         try {
-            return new Race(updateFrequency, session, track, topic, retainedRange, teams);
+            return new Race(
+                    updateFrequency,
+                    session,
+                    reactionRange,
+                    track,
+                    topic,
+                    retainedRange,
+                    teams);
+
         } catch (InterruptedException
                 | ExecutionException
                 | TimeoutException e) {

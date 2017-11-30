@@ -19,6 +19,9 @@ public class Car implements Comparable<Car> {
     private double previousLapTime = 0.0;
     private double currentLapTime = 0.0;
     private double lapDifference = 0.0;
+    private double reactionTime = 0.0;
+    private double elapsedReactionTime = 0.0;
+    private int currentSegment = -1;
 
     public Car(
             int id,
@@ -60,8 +63,27 @@ public class Car implements Comparable<Car> {
 
     double getDeceleration() { return deceleration; }
 
+    int getCurrentSegment() { return currentSegment; }
+
     void setPosition(int position) {
         this.position = position;
+    }
+
+    void setSegment(int segment, double reactionTime) {
+        this.currentSegment = segment;
+        this.elapsedReactionTime = 0.0;
+        this.reactionTime = reactionTime;
+    }
+
+    boolean canReact(double elapsedSeconds) {
+        if ( reactionTime > 0.0 ) {
+            elapsedReactionTime += elapsedSeconds;
+            if (elapsedReactionTime < reactionTime) {
+                return false;
+            }
+            reactionTime = 0.0;
+        }
+        return true;
     }
 
     void accelerate(double deltaSpeed, double elapsedSeconds) {
