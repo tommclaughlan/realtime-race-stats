@@ -42,44 +42,34 @@ public class Car implements Comparable<Car> {
 
     double getLocation() { return location; }
 
+    double getCornering() { return cornering; }
+
+    double getMaxSpeed() { return maxSpeed; }
+
+    double getCurrentSpeed() { return currentSpeed; }
+
+    double getAcceleration() { return acceleration; }
+
+    double getDeceleration() { return deceleration; }
+
     void setPosition(int position) {
         this.position = position;
     }
 
-    void move(RaceTrack track, long elapsed) {
-        double elapsedSeconds = ((double)elapsed / 1000000000.0);
-
-        double deltaSpeed;
-        double speedCap;
-
-        // Are we in a corner?
-        if ( track.inCorner( this ) ) {
-            speedCap = cornering;
-        } else {
-            speedCap = maxSpeed;
-        }
-
-        if ( speedCap - currentSpeed < 0.0 ) {
-            deltaSpeed = -deceleration;
-        } else {
-            deltaSpeed = acceleration;
-        }
-
-        // Accelerate
+    void accelerate(double deltaSpeed, double elapsedSeconds) {
         currentSpeed += deltaSpeed * elapsedSeconds;
-        if ( currentSpeed > maxSpeed ) {
+        if (currentSpeed > maxSpeed) {
             // Cap to max speed
             currentSpeed = maxSpeed;
         }
+    }
 
-        // Move ahead
-        location += ( currentSpeed * elapsedSeconds ) / track.getLength();
+    void move(double trackLength, double elapsedSeconds) {
+        location += ( currentSpeed * elapsedSeconds ) / trackLength;
         if ( location >= 1.0 ) {
             location -= 1.0;
             lap += 1;
         }
-
-
     }
 
     void buildJSON(StringBuilder sb) {
@@ -100,19 +90,10 @@ public class Car implements Comparable<Car> {
 
     @Override
     public int compareTo(Car o) {
-        if (lap > o.lap) {
-            return 1;
+        int result = Integer.compare(lap, o.lap);
+        if ( result == 0 ) {
+            return Double.compare(location, o.location);
         }
-        if (lap < o.lap) {
-            return -1;
-        }
-        // laps are equal so compare location
-        if (location > o.location) {
-            return 1;
-        }
-        if (location < o.location) {
-            return -1;
-        }
-        return 0; // Both are at the same position
+        return result;
     }
 }

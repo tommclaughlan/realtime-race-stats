@@ -56,16 +56,12 @@ public class Race {
     }
 
     void start() {
-        final Random random = new Random(Instant.now().toEpochMilli());
         final long nanoFrequency = updateFrequency * 1000000;
 
         long current = System.nanoTime();
         long previous = current;
         long tick = 0;
-        long elapsed = 0;
-        double elapsedSeconds = 0.0;
-        double min = 0.001;
-        double max = 0.01;
+        long elapsed;
 
         while (true) {
             previous = current;
@@ -73,10 +69,7 @@ public class Race {
             elapsed = current - previous;
             tick += elapsed;
 
-            for (Car car : cars) {
-                // Run car simulation
-                car.move(raceTrack, elapsed);
-            }
+            update(elapsed);
 
             if ( tick >= nanoFrequency ) {
                 tick -= nanoFrequency;
@@ -93,6 +86,33 @@ public class Race {
                 // Send snapshot to Diffusion
                 timeSeries.append(topic + "/updates", JSON.class, createJSON());
             }
+        }
+    }
+
+    private void update(final long elapsed) {
+        final double elapsedSeconds = ((double)elapsed / 1000000000.0);
+
+        double deltaSpeed;
+        double speedCap;
+
+        for (Car car : cars) {
+            // Is car in a corner?
+            if ( raceTrack.inCorner( car ) ) {
+                speedCap = car.getCornering();
+            } else {
+                speedCap = car.getMaxSpeed();
+            }
+
+            // Is car accelerating or decelerating?
+            if ( speedCap - car.getCurrentSpeed() < 0.0 ) {
+                deltaSpeed = -car.getDeceleration();
+            } else {
+                deltaSpeed = car.getAcceleration();
+            }
+
+            // Move the car ahead
+            car.accelerate(deltaSpeed, elapsedSeconds);
+            car.move(raceTrack.getLength(), elapsedSeconds);
         }
     }
 
