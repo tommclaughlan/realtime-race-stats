@@ -20,7 +20,13 @@ import java.util.concurrent.TimeoutException;
 import static com.pushtechnology.diffusion.datatype.DataTypes.JSON_DATATYPE_NAME;
 
 public class Race {
+    private static final Random RANDOM = new Random(Instant.now().toEpochMilli());
     private static final JSONDataType JSON_DATA_TYPE = Diffusion.dataTypes().json();
+
+    private static double getRandomFromFrange(DoubleRange range) {
+        return RANDOM.doubles(1, range.getMin(), range.getMax()).toArray()[0];
+    }
+
     private final ArrayList<Team> teams;
     private final ArrayList<Car> cars;
     private final ArrayList<Car> sorted;
@@ -29,15 +35,18 @@ public class Race {
     private final Session session;
     private final String topic;
     private final TimeSeries timeSeries;
+    private final DoubleRange reactionRange;
 
     public Race(
             long updateFrequency,
             Session session,
+            DoubleRange reactionRange,
             RaceTrack racetrack,
             String topic,
             String retainedRange,
             ArrayList<Team> teams) throws InterruptedException, ExecutionException, TimeoutException {
 
+        this.reactionRange = reactionRange;
         this.updateFrequency = updateFrequency;
         this.raceTrack = racetrack;
         this.session = session;
@@ -96,22 +105,32 @@ public class Race {
         double speedCap;
 
         for (Car car : cars) {
+            // Find the segment this car is in
+            int segment = raceTrack.getSegment( car );
+            if (segment != car.getCurrentSegment()) {
+                // We changed segments so perform reaction timing
+                car.setSegment(segment, getRandomFromFrange(reactionRange));
+            }
+
             // Is car in a corner?
-            if ( raceTrack.inCorner( car ) ) {
+            if (raceTrack.isCornerSegment(car.getCurrentSegment())) {
                 speedCap = car.getCornering();
             } else {
                 speedCap = car.getMaxSpeed();
             }
 
-            // Is car accelerating or decelerating?
-            if ( speedCap - car.getCurrentSpeed() < 0.0 ) {
-                deltaSpeed = -car.getDeceleration();
-            } else {
-                deltaSpeed = car.getAcceleration();
+            if (car.canReact(elapsedSeconds)) {
+                // Is car accelerating or decelerating?
+                if ( speedCap - car.getCurrentSpeed() < 0.0 ) {
+                    deltaSpeed = -car.getDeceleration();
+                } else {
+                    deltaSpeed = car.getAcceleration();
+                }
+
+                // Move the car ahead
+                car.accelerate(deltaSpeed, elapsedSeconds);
             }
 
-            // Move the car ahead
-            car.accelerate(deltaSpeed, elapsedSeconds);
             car.move(raceTrack.getLength(), elapsedSeconds);
         }
     }

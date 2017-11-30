@@ -112,6 +112,16 @@ class RaceProperties {
                 System.out.println("Deceleration range: " + mindeceleration + "m/s^2 to " + maxdeceleration + "m/s^2");
             }
 
+            // Read reaction range
+            String minreaction = properties.getProperty("minreaction");
+            String maxreaction = properties.getProperty("maxreaction");
+            if (minreaction == null || maxreaction == null) {
+                System.out.println("Reaction range not specified!");
+                return null;
+            } else {
+                System.out.println("Reaction range: " + minreaction + "ms to " + maxreaction + "ms");
+            }
+
             return new RaceProperties(
                     track,
                     topic,
@@ -122,7 +132,8 @@ class RaceProperties {
                     new DoubleRange(Double.parseDouble(minspeed),Double.parseDouble(maxspeed)),
                     new DoubleRange(Double.parseDouble(mincornering), Double.parseDouble(maxcornering)),
                     new DoubleRange(Double.parseDouble(minacceleration),Double.parseDouble(maxacceleration)),
-                    new DoubleRange(Double.parseDouble(mindeceleration),Double.parseDouble(maxdeceleration)));
+                    new DoubleRange(Double.parseDouble(mindeceleration),Double.parseDouble(maxdeceleration)),
+                    new DoubleRange(Double.parseDouble(minreaction), Double.parseDouble(maxreaction)));
         } catch (IOException ex) {
             ex.printStackTrace();
             return null;
@@ -148,6 +159,7 @@ class RaceProperties {
     private final DoubleRange cornering;
     private final DoubleRange acceleration;
     private final DoubleRange deceleration;
+    private final DoubleRange reaction;
 
     private RaceProperties(
             String track,
@@ -159,7 +171,8 @@ class RaceProperties {
             DoubleRange speed,
             DoubleRange cornering,
             DoubleRange acceleration,
-            DoubleRange deceleration) {
+            DoubleRange deceleration,
+            DoubleRange reaction) {
 
         this.topic = topic;
         this.track = track;
@@ -171,6 +184,7 @@ class RaceProperties {
         this.cornering = cornering;
         this.acceleration = acceleration;
         this.deceleration = deceleration;
+        this.reaction = reaction;
     }
 
     String getTopic() {
@@ -202,5 +216,7 @@ class RaceProperties {
     DoubleRange getAcceleration() { return acceleration; }
 
     DoubleRange getDeceleration() { return deceleration; }
+
+    DoubleRange getReaction() { return reaction; }
 }
 

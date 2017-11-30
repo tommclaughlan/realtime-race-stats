@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class RaceTrack {
-    private static Part loadPart( JsonParser parser, double location ) throws IOException {
+    private static Part loadPart(int index, JsonParser parser, double location) throws IOException {
         if (parser.nextToken() != JsonToken.FIELD_NAME) {
             throw new IllegalArgumentException(); // TODO: throw something else
         }
@@ -41,7 +41,7 @@ public class RaceTrack {
             throw new IllegalArgumentException(); // TODO: throw something else
         }
 
-        return new Part(type, length, location);
+        return new Part(index, type, length, location);
     }
 
     private final String trackFile;
@@ -59,10 +59,12 @@ public class RaceTrack {
                     if (parser.nextToken() != JsonToken.START_ARRAY) {
                         throw new IllegalArgumentException(); // TODO: throw something else
                     }
+                    int index = 0;
                     while (parser.nextToken() == JsonToken.START_OBJECT) {
-                        Part part = loadPart(parser, len);
+                        Part part = loadPart(index, parser, len);
                         len += part.length;
                         parts.add(part);
+                        index += 1;
                     }
                     break;
                 }
@@ -82,19 +84,22 @@ public class RaceTrack {
         return length;
     }
 
-    boolean inCorner( Car car ) {
+    int getSegment( Car car ) {
         final double location = car.getLocation() * length;
 
         // Find segment this car is in
-        for ( Part part : parts ) {
-            if ( location >= part.location
-                    && location <= part.location + part.length ) {
-
-                return part.type == Part.TYPE.CURVED;
+        for (Part part : parts) {
+            if (location >= part.location
+                    && location <= part.location + part.length) {
+                return part.id;
             }
         }
-        // TODO: THROW because the car is outside of the track
-        return false;
+
+        return -1;
+    }
+
+    boolean isCornerSegment(int segment) {
+        return segment >= 0 && parts.get(segment).type == Part.TYPE.CURVED;
     }
 
     private static class Part {
@@ -103,26 +108,16 @@ public class RaceTrack {
             CURVED,
         }
 
+        private final int id;
         private final double location;
         private final double length;
         private final TYPE type;
 
-        Part(TYPE type, double length, double location) {
+        Part(int id, TYPE type, double length, double location) {
+            this.id = id;
             this.type = type;
             this.length = length;
             this.location = location;
-        }
-
-        public TYPE getType() {
-            return type;
-        }
-
-        public double getLength() {
-            return length;
-        }
-
-        public double getLocation() {
-            return location;
         }
     }
 }
