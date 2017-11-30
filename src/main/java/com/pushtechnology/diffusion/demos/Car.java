@@ -21,7 +21,7 @@ public class Car implements Comparable<Car> {
     private double lapDifference = 0.0;
     private double reactionTime = 0.0;
     private double elapsedReactionTime = 0.0;
-    private int currentSegment = -1;
+    private int partId = -1;
 
     public Car(
             int id,
@@ -63,34 +63,46 @@ public class Car implements Comparable<Car> {
 
     double getDeceleration() { return deceleration; }
 
-    int getCurrentSegment() { return currentSegment; }
-
     void setPosition(int position) {
         this.position = position;
     }
 
-    void setSegment(int segment, double reactionTime) {
-        this.currentSegment = segment;
+    void setReactionTime(int partId, double reactionTime) {
+        if ( this.reactionTime > 0.0 || partId == this.partId ) {
+            return;
+        }
+        if ( teamId == 0 && id == 0 ) {
+            System.out.println("Set reaction time: " + reactionTime);
+        }
+        this.partId = partId;
         this.elapsedReactionTime = 0.0;
         this.reactionTime = reactionTime;
     }
 
-    boolean canReact(double elapsedSeconds) {
-        if ( reactionTime > 0.0 ) {
-            elapsedReactionTime += elapsedSeconds;
-            if (elapsedReactionTime < reactionTime) {
-                return false;
-            }
-            reactionTime = 0.0;
-        }
-        return true;
+    boolean canReact() {
+        return reactionTime == 0.0 || elapsedReactionTime >= reactionTime;
     }
 
-    void accelerate(double deltaSpeed, double elapsedSeconds) {
-        currentSpeed += deltaSpeed * elapsedSeconds;
+    void updateReaction(double elapsedSeconds) {
+        if ( reactionTime > 0.0 ) {
+            elapsedReactionTime += elapsedSeconds;
+            reactionTime = 0.0;
+        }
+    }
+
+    void accelerate(double elapsedSeconds) {
+        currentSpeed += acceleration * elapsedSeconds;
         if (currentSpeed > maxSpeed) {
             // Cap to max speed
             currentSpeed = maxSpeed;
+        }
+    }
+
+    void decelerate(double elapsedSeconds) {
+        currentSpeed -= deceleration * elapsedSeconds;
+        if (currentSpeed < cornering ) {
+            // Cap to cornering speed
+            currentSpeed = cornering;
         }
     }
 

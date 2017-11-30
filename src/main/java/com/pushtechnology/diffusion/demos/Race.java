@@ -37,6 +37,8 @@ public class Race {
     private final TimeSeries timeSeries;
     private final DoubleRange reactionRange;
 
+    private boolean isStartOfRace = true;
+
     public Race(
             long updateFrequency,
             Session session,
@@ -79,6 +81,9 @@ public class Race {
             tick += elapsed;
 
             update(elapsed);
+            if ( isStartOfRace ) {
+                isStartOfRace = false;
+            }
 
             if ( tick >= nanoFrequency ) {
                 tick -= nanoFrequency;
@@ -101,37 +106,67 @@ public class Race {
     private void update(final long elapsed) {
         final double elapsedSeconds = ((double)elapsed / 1000000000.0);
 
+        double carPos;
         double deltaSpeed;
         double speedCap;
+        RaceTrack.Part currentPart;
+        RaceTrack.Part nextPart;
 
         for (Car car : cars) {
-            // Find the segment this car is in
-            int segment = raceTrack.getSegment( car );
-            if (segment != car.getCurrentSegment()) {
-                // We changed segments so perform reaction timing
-                car.setSegment(segment, getRandomFromFrange(reactionRange));
-            }
+            currentPart = raceTrack.getPart(car);
+            nextPart = raceTrack.getNextPart(currentPart.getId());
+            carPos = car.getLocation() * raceTrack.getLength();
 
-            // Is car in a corner?
-            if (raceTrack.isCornerSegment(car.getCurrentSegment())) {
-                speedCap = car.getCornering();
+            if (nextPart.isCurved() && carPos >= nextPart.getLocation() - 30) {
+                car.decelerate(elapsedSeconds);
+            } else if ( currentPart.isCurved() && carPos <= nextPart.getLocation() - 30 ) {
+                car.decelerate(elapsedSeconds);
             } else {
-                speedCap = car.getMaxSpeed();
-            }
-
-            if (car.canReact(elapsedSeconds)) {
-                // Is car accelerating or decelerating?
-                if ( speedCap - car.getCurrentSpeed() < 0.0 ) {
-                    deltaSpeed = -car.getDeceleration();
-                } else {
-                    deltaSpeed = car.getAcceleration();
-                }
-
-                // Move the car ahead
-                car.accelerate(deltaSpeed, elapsedSeconds);
+                car.accelerate(elapsedSeconds);
             }
 
             car.move(raceTrack.getLength(), elapsedSeconds);
+
+
+
+//            currentPart = raceTrack.getPart(car);
+//            nextPart = raceTrack.getNextPart(currentPart.getId());
+//
+//            carPos = car.getLocation() * raceTrack.getLength();
+//            if ( !isStartOfRace ) {
+//                if (carPos >= nextPart.getLocation() - 10) {
+//                    car.setReactionTime(nextPart.getId(), getRandomFromFrange(reactionRange));
+//                } else {
+//                    car.updateReaction(elapsedSeconds);
+//                }
+//            } else {
+//                car.setReactionTime(nextPart.getId(), getRandomFromFrange(reactionRange));
+//            }
+//
+//            // Is car about to go into a corner?
+//            if (nextPart.isCurved() && !isStartOfRace) {
+//                if (carPos >= nextPart.getLocation() - 10) {
+//                    speedCap = car.getCornering();
+//                } else {
+//                    speedCap = car.getMaxSpeed();
+//                }
+//            } else {
+//                speedCap = car.getMaxSpeed();
+//            }
+//
+//            if (car.canReact()) {
+//                // Is car accelerating or decelerating?
+//                if ( speedCap - car.getCurrentSpeed() < 0.0 ) {
+//                    deltaSpeed = -car.getDeceleration();
+//                } else {
+//                    deltaSpeed = car.getAcceleration();
+//                }
+//                car.accelerate(deltaSpeed, elapsedSeconds);
+//            } else {
+//                car.updateReaction(elapsedSeconds);
+//            }
+//
+//            car.move(raceTrack.getLength(), elapsedSeconds);
         }
     }
 

@@ -48,7 +48,7 @@ public class RaceTrack {
     private final ArrayList<Part> parts = new ArrayList<>();
     private final double length;
 
-    RaceTrack( String filename ) throws IOException {
+    RaceTrack(String filename) throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
 
         double len = 0.0;
@@ -84,25 +84,32 @@ public class RaceTrack {
         return length;
     }
 
-    int getSegment( Car car ) {
+    Part getPart(Car car) {
         final double location = car.getLocation() * length;
 
         // Find segment this car is in
         for (Part part : parts) {
             if (location >= part.location
                     && location <= part.location + part.length) {
-                return part.id;
+                return part;
             }
         }
 
-        return -1;
+        return null;
     }
 
-    boolean isCornerSegment(int segment) {
-        return segment >= 0 && parts.get(segment).type == Part.TYPE.CURVED;
+    Part getPart(int id) {
+        return parts.get(id);
     }
 
-    private static class Part {
+    Part getNextPart(int id) {
+        if (id == parts.size() - 1 ) {
+            return parts.get(0);
+        }
+        return parts.get(id + 1);
+    }
+
+    public static class Part {
         private enum TYPE {
             STRAIGHT,
             CURVED,
@@ -119,5 +126,13 @@ public class RaceTrack {
             this.length = length;
             this.location = location;
         }
+
+        int getId() { return id; }
+
+        double getLocation() { return location; }
+
+        double getLength() { return length; }
+
+        boolean isCurved() { return type == TYPE.CURVED; }
     }
 }
