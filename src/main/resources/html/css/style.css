@@ -1,10 +1,24 @@
 body {
-    background: #2e2e2e;
+    background: #212529;
     color: #f1f1f1;
+    font-family: 'PT Sans', sans-serif;
 }
 
 canvas {
     width : 90%;
+}
+
+.header {
+    background-color: #212529;
+    color: #f1f1f1;
+    font-family: 'Merriweather Sans', sans-serif;
+    font-size: 24px;
+    font-style: italic;
+}
+
+.race-map {
+    padding: 16px;
+    background-color: #121212;
 }
 
 .table-active {
@@ -15,13 +29,17 @@ canvas {
 }
 
 .table-height {
-    max-height: 80vh !important;
+    max-height: 85vh !important;
     overflow: auto;
 }
 
 .table-short {
-    max-height: 40vh !important;
+    max-height: 45vh !important;
     overflow: auto;
+}
+
+.stats-panel {
+    height: 40vh! important;
 }
 
 .table {
@@ -34,7 +52,11 @@ canvas {
     padding : 16px;
     position: fixed;
     bottom: 0;
-    background-color: #f1f1f1;
+    background-color: #121212;
+}
+
+.dial {
+    font-family: 'Lato', sans-serif;
 }
 
 .dial > span {
@@ -62,14 +84,22 @@ canvas {
     text-align: center;
     width: 0px;
     background-color: #676767;
+    font-family: 'Lato', sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.lap-time {
+    font-family: 'Lato', sans-serif;
 }
 
 .lap-green {
-    border-right-color: #00b956 !important;
+    color: #00b956 !important;
 }
 
 .lap-red {
-    border-right-color: #f64d3c !important;
+    color: #f64d3c !important;
 }
 
 .col-cc0066 {

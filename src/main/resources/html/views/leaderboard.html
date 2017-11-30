@@ -2,8 +2,8 @@
     <table class="table table-hover table-striped table-dark">
         <thead>
             <tr>
-                <th scope="col-sm"></th>
-                <th scope="col">Name</th>
+                <th scope="col"></th>
+                <th scope="col"></th>
                 <th scope="col">Laps</th>
                 <th scope="col">Lap Time</th>
                 <th scope="col">Last Lap</th>
@@ -14,8 +14,8 @@
                 <th scope="row" class="board-position" ng-class="car.class">{{ $index + 1 }}</th>
                 <th>{{car.name}}   <small class="text-muted">{{car.team}}</small></th>
                 <th>{{car.laps}}</th>
-                <th>{{car.lap | number : 3}}</th>
-                <th>{{car.last_lap | number : 3}}
+                <th class="lap-time">{{car.lap | number : 3}}</th>
+                <th class="lap-time">{{car.last_lap | number : 3}}
                     <small ng-class="{ 'lap-green' : (car.lap_delta < 0), 'lap-red' : (car.lap_delta > 0) }">{{ car.lap_delta | number : 3 }}</small>
                 </th>
             </tr>
