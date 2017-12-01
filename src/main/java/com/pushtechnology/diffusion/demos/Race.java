@@ -1,7 +1,10 @@
 package com.pushtechnology.diffusion.demos;
 
 import com.pushtechnology.diffusion.client.Diffusion;
+import com.pushtechnology.diffusion.client.callbacks.ErrorReason;
+import com.pushtechnology.diffusion.client.features.Messaging;
 import com.pushtechnology.diffusion.client.features.TimeSeries;
+import com.pushtechnology.diffusion.client.features.control.topics.MessagingControl;
 import com.pushtechnology.diffusion.client.features.control.topics.TopicControl;
 import com.pushtechnology.diffusion.client.features.control.topics.TopicUpdateControl;
 import com.pushtechnology.diffusion.client.session.Session;
@@ -9,7 +12,11 @@ import com.pushtechnology.diffusion.client.topics.details.TopicSpecification;
 import com.pushtechnology.diffusion.client.topics.details.TopicType;
 import com.pushtechnology.diffusion.datatype.json.JSON;
 import com.pushtechnology.diffusion.datatype.json.JSONDataType;
+import com.pushtechnology.repackaged.jackson.core.JsonToken;
+import com.pushtechnology.repackaged.jackson.dataformat.cbor.CBORFactory;
+import com.pushtechnology.repackaged.jackson.dataformat.cbor.CBORParser;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.time.Instant;
 import java.util.*;
@@ -30,6 +37,7 @@ public class Race {
     private final Session session;
     private final String topic;
     private final TimeSeries timeSeries;
+    private final MessagingControl messaging;
     private final DoubleRange reactionRange;
 
     private boolean isStartOfRace = true;
@@ -52,13 +60,70 @@ public class Race {
 
         cars = new ArrayList<>();
         sorted = new ArrayList<>();
-        for(Team team : teams ) {
+        for (Team team : teams) {
             cars.addAll(team.getCars());
             sorted.addAll(team.getCars());
         }
 
         timeSeries = session.feature(TimeSeries.class);
+        messaging = session.feature(MessagingControl.class);
+
         createTopics(retainedRange);
+
+        // Prepare message request handler
+        messaging.addRequestHandler(
+                topic,
+                JSON.class,
+                JSON.class,
+                new MessagingControl.RequestHandler<JSON, JSON>() {
+                    @Override
+                    public void onRequest(JSON json, RequestContext requestContext, Responder<JSON> responder) {
+                        // Read request
+                        CBORFactory factory = new CBORFactory();
+                        CBORParser parser = null;
+                        Map<String, String> request  = new HashMap<>();
+
+                        try {
+                            parser = factory.createParser(json.asInputStream());
+
+                            if (parser.nextToken() != JsonToken.START_OBJECT) {
+                                responder.reject("Invalid request." );
+                                return;
+                            }
+
+                            while (true) {
+                                String key = parser.nextFieldName();
+
+                                if (key == null) {
+                                    break;
+                                }
+
+                                request.put(key, parser.nextTextValue());
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            responder.reject("Invalid request.");
+                            return;
+                        }
+
+                        // Parse request
+                        int id = Integer.parseUnsignedInt(request.get("id"));
+                        int teamid = Integer.parseUnsignedInt(request.get("teamid"));
+
+                        String times = teams.get(teamid).getCars().get(id).buildLapTimeJSON();
+                        responder.respond(JSON_DATA_TYPE.fromJsonString(times));
+                    }
+
+                    @Override
+                    public void onClose() {
+                        System.out.println("Closing messaging control.");
+                    }
+
+                    @Override
+                    public void onError(ErrorReason errorReason) {
+                        System.out.println("Error in messaging control: " + errorReason.toString());
+                    }
+                });
     }
 
     void start() {

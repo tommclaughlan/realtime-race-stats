@@ -193,6 +193,22 @@ public class Car implements Comparable<Car> {
                 .append('}');
     }
 
+    String buildLapTimeJSON() {
+        StringBuilder sb = new StringBuilder(lapTimes.size() * 10);
+        sb.append("[");
+        boolean first = true;
+        for (double time : lapTimes) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(",");
+            }
+            sb.append(time);
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
     @Override
     public int compareTo(Car o) {
         int result = Integer.compare(lap, o.lap);
