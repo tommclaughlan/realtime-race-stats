@@ -20,12 +20,7 @@ import java.util.concurrent.TimeoutException;
 import static com.pushtechnology.diffusion.datatype.DataTypes.JSON_DATATYPE_NAME;
 
 public class Race {
-    private static final Random RANDOM = new Random(Instant.now().toEpochMilli());
     private static final JSONDataType JSON_DATA_TYPE = Diffusion.dataTypes().json();
-
-    private static double getRandomFromFrange(DoubleRange range) {
-        return RANDOM.doubles(1, range.getMin(), range.getMax()).toArray()[0];
-    }
 
     private final ArrayList<Team> teams;
     private final ArrayList<Car> cars;
@@ -107,8 +102,6 @@ public class Race {
         final double elapsedSeconds = ((double)elapsed / 1000000000.0);
 
         double carPos;
-        double deltaSpeed;
-        double speedCap;
         RaceTrack.Part currentPart;
         RaceTrack.Part nextPart;
 
@@ -118,11 +111,11 @@ public class Race {
             carPos = car.getLocation() * raceTrack.getLength();
 
             if (nextPart.isCurved() && carPos >= nextPart.getLocation() - 30) {
-                car.decelerate(elapsedSeconds);
+                car.decelerate(elapsedSeconds, reactionRange.getRandom());
             } else if ( currentPart.isCurved() && carPos <= nextPart.getLocation() - 30 ) {
-                car.decelerate(elapsedSeconds);
+                car.decelerate(elapsedSeconds, reactionRange.getRandom());
             } else {
-                car.accelerate(elapsedSeconds);
+                car.accelerate(elapsedSeconds, reactionRange.getRandom());
             }
 
             car.move(raceTrack.getLength(), elapsedSeconds);
