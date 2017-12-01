@@ -2,7 +2,6 @@ package com.pushtechnology.diffusion.demos;
 
 import com.pushtechnology.diffusion.client.Diffusion;
 import com.pushtechnology.diffusion.client.callbacks.ErrorReason;
-import com.pushtechnology.diffusion.client.features.Messaging;
 import com.pushtechnology.diffusion.client.features.TimeSeries;
 import com.pushtechnology.diffusion.client.features.control.topics.MessagingControl;
 import com.pushtechnology.diffusion.client.features.control.topics.TopicControl;
@@ -17,8 +16,6 @@ import com.pushtechnology.repackaged.jackson.dataformat.cbor.CBORFactory;
 import com.pushtechnology.repackaged.jackson.dataformat.cbor.CBORParser;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +34,6 @@ public class Race {
     private final Session session;
     private final String topic;
     private final TimeSeries timeSeries;
-    private final MessagingControl messaging;
     private final DoubleRange reactionRange;
 
     private boolean isStartOfRace = true;
@@ -66,7 +62,7 @@ public class Race {
         }
 
         timeSeries = session.feature(TimeSeries.class);
-        messaging = session.feature(MessagingControl.class);
+        MessagingControl messaging = session.feature(MessagingControl.class);
 
         createTopics(retainedRange);
 
@@ -108,9 +104,9 @@ public class Race {
 
                         // Parse request
                         int id = Integer.parseUnsignedInt(request.get("id"));
-                        int teamid = Integer.parseUnsignedInt(request.get("teamid"));
+                        int teamId = Integer.parseUnsignedInt(request.get("teamid"));
 
-                        String times = teams.get(teamid).getCars().get(id).buildLapTimeJSON();
+                        String times = teams.get(teamId).getCars().get(id).buildLapTimeJSON();
                         responder.respond(JSON_DATA_TYPE.fromJsonString(times));
                     }
 
@@ -184,47 +180,6 @@ public class Race {
             }
 
             car.move(raceTrack.getLength(), elapsedSeconds);
-
-
-
-//            currentPart = raceTrack.getPart(car);
-//            nextPart = raceTrack.getNextPart(currentPart.getId());
-//
-//            carPos = car.getLocation() * raceTrack.getLength();
-//            if ( !isStartOfRace ) {
-//                if (carPos >= nextPart.getLocation() - 10) {
-//                    car.setReactionTime(nextPart.getId(), getRandomFromFrange(reactionRange));
-//                } else {
-//                    car.updateReaction(elapsedSeconds);
-//                }
-//            } else {
-//                car.setReactionTime(nextPart.getId(), getRandomFromFrange(reactionRange));
-//            }
-//
-//            // Is car about to go into a corner?
-//            if (nextPart.isCurved() && !isStartOfRace) {
-//                if (carPos >= nextPart.getLocation() - 10) {
-//                    speedCap = car.getCornering();
-//                } else {
-//                    speedCap = car.getMaxSpeed();
-//                }
-//            } else {
-//                speedCap = car.getMaxSpeed();
-//            }
-//
-//            if (car.canReact()) {
-//                // Is car accelerating or decelerating?
-//                if ( speedCap - car.getCurrentSpeed() < 0.0 ) {
-//                    deltaSpeed = -car.getDeceleration();
-//                } else {
-//                    deltaSpeed = car.getAcceleration();
-//                }
-//                car.accelerate(deltaSpeed, elapsedSeconds);
-//            } else {
-//                car.updateReaction(elapsedSeconds);
-//            }
-//
-//            car.move(raceTrack.getLength(), elapsedSeconds);
         }
     }
 

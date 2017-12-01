@@ -98,10 +98,6 @@ public class RaceTrack {
         return null;
     }
 
-    Part getPart(int id) {
-        return parts.get(id);
-    }
-
     Part getNextPart(int id) {
         if (id == parts.size() - 1 ) {
             return parts.get(0);
@@ -109,7 +105,7 @@ public class RaceTrack {
         return parts.get(id + 1);
     }
 
-    public static class Part {
+    static class Part {
         private enum TYPE {
             STRAIGHT,
             CURVED,

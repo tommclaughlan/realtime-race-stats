@@ -25,10 +25,6 @@ public class Car implements Comparable<Car> {
     private double decelerationTime = -2;
     private double elapsedReactionTime = 0.0;
 
-
-    private double reactionTime = -1;
-    private int previousPart = -1;
-
     public Car(
             int id,
             int teamId,
@@ -61,35 +57,8 @@ public class Car implements Comparable<Car> {
 
     double getLocation() { return location; }
 
-    double getCornering() { return cornering; }
-
-    double getMaxSpeed() { return maxSpeed; }
-
-    double getCurrentSpeed() { return currentSpeed; }
-
-    double getAcceleration() { return acceleration; }
-
-    double getDeceleration() { return deceleration; }
-
     void setPosition(int position) {
         this.position = position;
-    }
-
-    void setReactionTime(int partId, double reactionTime) {
-        this.previousPart = partId;
-        this.elapsedReactionTime = 0.0;
-        this.reactionTime = reactionTime;
-    }
-
-    boolean canReact() {
-        return reactionTime == 0.0 || elapsedReactionTime >= reactionTime;
-    }
-
-    void updateReaction(double elapsedSeconds) {
-        if ( reactionTime > 0.0 ) {
-            elapsedReactionTime += elapsedSeconds;
-            reactionTime = 0.0;
-        }
     }
 
     void accelerate(double elapsedSeconds, double reactionTime) {
@@ -97,7 +66,6 @@ public class Car implements Comparable<Car> {
             accelerationTime = reactionTime;
             elapsedReactionTime = 0.0;
             maxSpeed = speedRange.getRandom() / 3.6;
-            print( "MaxSpeed: " + maxSpeed);
         } else if ( accelerationTime > -1 ){
             elapsedReactionTime += elapsedSeconds;
         }
@@ -119,7 +87,6 @@ public class Car implements Comparable<Car> {
             decelerationTime = reactionTime;
             elapsedReactionTime = 0.0;
             cornering = corneringRange.getRandom() / 3.6;
-            print( "Cornering: " + cornering);
         } else if ( decelerationTime > -1 ) {
             elapsedReactionTime += elapsedSeconds;
         }
@@ -136,12 +103,6 @@ public class Car implements Comparable<Car> {
         }
     }
 
-    private void print(String val) {
-        if ( teamId == 0 && id == 0 ) {
-            System.out.println(val);
-        }
-    }
-
     void move(double trackLength, double elapsedSeconds) {
         location += ( currentSpeed * elapsedSeconds ) / trackLength;
         currentLapTime += elapsedSeconds;
@@ -150,18 +111,12 @@ public class Car implements Comparable<Car> {
             location -= 1.0;
             lap += 1;
 
-            print("Current lap time: " + currentLapTime);
             // Account for overshoot in lap times
             double overhead = ( ( location * trackLength ) / currentSpeed );
             currentLapTime -= overhead;
 
-            print("Current lap time - overhead: " + currentLapTime);
-            print("Overhead: " + overhead);
-            print("Previous lap time: " + previousLapTime);
-
             if ( previousLapTime != 0.0 ) {
                 lapDifference = currentLapTime - previousLapTime;
-                print("difference in lap times: " + lapDifference);
             }
 
             previousLapTime = currentLapTime;

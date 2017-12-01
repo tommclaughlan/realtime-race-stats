@@ -3,7 +3,7 @@ package com.pushtechnology.diffusion.demos;
 import java.time.Instant;
 import java.util.Random;
 
-public class DoubleRange {
+class DoubleRange {
     private static final Random RANDOM = new Random(Instant.now().toEpochMilli());
 
     private final double min;
@@ -12,14 +12,6 @@ public class DoubleRange {
     DoubleRange(double min, double max) {
         this.min = min;
         this.max = max;
-    }
-
-    double getMin() {
-        return min;
-    }
-
-    double getMax() {
-        return max;
     }
 
     double getRandom() {

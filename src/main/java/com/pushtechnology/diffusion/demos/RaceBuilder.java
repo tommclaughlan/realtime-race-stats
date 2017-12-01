@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 class RaceBuilder {
-    public static RaceBuilder create() {
+    static RaceBuilder create() {
         final Randomiser randomiser;
         try {
             randomiser = new Randomiser();
