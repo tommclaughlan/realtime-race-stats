@@ -51,7 +51,7 @@ app.controller('RaceController', ['$scope', '$interval', 'TrackModel', 'Diffusio
                     var val = value.value.get();
                     var time = value.timestamp;
 
-                    if (!ClockModel.isPaused() && TrackModel.properties) {
+                    if (!ClockModel.isPaused() && ClockModel.isLive() && TrackModel.properties) {
                         val.forEach(function(car) {
                             CarsModel.updateCarPosition(car);
                         });

@@ -3,7 +3,9 @@ var app = require('angular').module('racing');
 app.factory('ClockModel', function() {
     var ClockModel = {
         paused : false,
-        live : true
+        live : true,
+        playback : false,
+        replayTick : 50
     };
 
     ClockModel.togglePause = function() {
@@ -16,6 +18,14 @@ app.factory('ClockModel', function() {
 
     ClockModel.setLive = function(live) {
         ClockModel.live = live;
+    };
+
+    ClockModel.setPlayback = function(playback) {
+        ClockModel.playback = playback;
+    };
+
+    ClockModel.isPlayback = function() {
+        return ClockModel.playback;
     };
 
     ClockModel.isPaused = function() {
@@ -54,13 +64,24 @@ app.factory('ClockModel', function() {
 });
 
 app.controller('ClockController', ['$scope', '$interval', 'ClockModel', 'Diffusion', 'CarsModel', function($scope, $interval, ClockModel, Diffusion, CarsModel) {
-    $scope.togglePause = ClockModel.togglePause;
     $scope.isPaused = ClockModel.isPaused;
 
     $scope.backToLive = function() {
         ClockModel.setLive(true);
         ClockModel.setPaused(false);
+        ClockModel.setPlayback(false);
     };
+
+    $scope.startPlayback = function() {
+        ClockModel.setPlayback(true);
+        ClockModel.setPaused(false);
+    };
+
+    $scope.togglePause = function() {
+        ClockModel.togglePause();
+        ClockModel.setPlayback(!ClockModel.isPaused());
+        ClockModel.setLive(false);
+    }
 
     $scope.slider = {
         value : 1,
@@ -104,6 +125,10 @@ app.controller('ClockController', ['$scope', '$interval', 'ClockModel', 'Diffusi
             }, function(err) {
                 console.log(err);
             });
+
+        if (ClockModel.isPlayback() && !ClockModel.isPaused() && !ClockModel.isLive()) {
+            $scope.slider.value += ClockModel.replayTick;
+        }
     };
 
     $scope.$watch(function() {
@@ -130,7 +155,7 @@ app.controller('ClockController', ['$scope', '$interval', 'ClockModel', 'Diffusi
     });
 
     if (Diffusion.session()) {
-        $interval(setStart, 200);
+        $interval(setStart, ClockModel.replayTick);
         setStart();
     }
 }]);

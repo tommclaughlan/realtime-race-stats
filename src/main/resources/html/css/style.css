@@ -46,6 +46,10 @@ canvas {
     white-space: nowrap;
 }
 
+.table-dark > thead th {
+    border: none !important;
+}
+
 .scrubber-view {
     height : 72px;
     width : 100%;
@@ -79,8 +83,8 @@ canvas {
 
 .board-position {
     font-weight: bold;
-    border-right-width: 12px;
-    border-right-style: solid;
+    border-right-width: 12px !important;
+    border-right-style: solid !important;
     text-align: center;
     width: 0px;
     background-color: #676767;
@@ -140,4 +144,22 @@ canvas {
 
 .col-2f1847 {
     border-right-color: #2f1847 !important;
+}
+
+.tick > line {
+    stroke: #212121 !important;
+}
+
+.tick > text {
+    stroke: 0;
+    fill: #f1f1f1 !important;
+}
+
+.nvd3 text {
+    stroke: 0;
+    fill: #f1f1f1 !important;
+}
+
+.nvd3 .nv-groups path.nv-line {
+    stroke-width: 2;
 }

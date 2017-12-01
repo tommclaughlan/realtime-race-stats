@@ -5,8 +5,9 @@ var angular = require('angular');
 require('@uirouter/angularjs');
 require('angularjs-slider');
 require('angularjs-gauge');
+require('angular-nvd3');
 
-var app = angular.module('racing', ['ui.router', 'rzModule', 'angularjs-gauge']);
+var app = angular.module('racing', ['ui.router', 'rzModule', 'angularjs-gauge', 'nvd3']);
 
 require('./diffusion');
 require('./connecting');
