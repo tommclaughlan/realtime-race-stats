@@ -1,5 +1,6 @@
 package com.pushtechnology.diffusion.demos;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class Car implements Comparable<Car> {
@@ -8,7 +9,7 @@ public class Car implements Comparable<Car> {
     private final String driverName;
     private final double acceleration;
     private final double deceleration;
-    private final HashSet<Double> lapTimes;
+    private final ArrayList<Double> lapTimes;
     private final DoubleRange speedRange;
     private final DoubleRange corneringRange;
 
@@ -44,7 +45,7 @@ public class Car implements Comparable<Car> {
         this.acceleration = acceleration;
         this.deceleration = deceleration;
 
-        this.lapTimes = new HashSet<>();
+        this.lapTimes = new ArrayList<>();
     }
 
     String getDriverName() {

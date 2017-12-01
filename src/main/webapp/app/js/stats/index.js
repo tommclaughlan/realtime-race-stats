@@ -46,7 +46,7 @@ app.factory('StatsModel', function() {
     StatsModel.init = function(data) {
         StatsModel.clear();
         data.forEach(function(time, lap) {
-            StatsModel.data[0].values.push({ x : lap, y : time });
+            StatsModel.data[0].values.push({ x : lap + 1, y : time.toFixed(3) });
         });
     };
 
@@ -80,7 +80,8 @@ app.factory('StatsModel', function() {
     return StatsModel;
 });
 
-app.controller('StatsController', ['$scope', 'CarsModel', 'StatsModel', function($scope, CarsModel, StatsModel) {
+app.controller('StatsController', ['$scope', 'CarsModel', 'StatsModel', 'Diffusion',
+    function($scope, CarsModel, StatsModel, Diffusion) {
 
     $scope.stats = false;
 
@@ -103,12 +104,28 @@ app.controller('StatsController', ['$scope', 'CarsModel', 'StatsModel', function
 
     var updateStats = function() {
         if ($scope.stats) {
-            StatsModel.dummy().then(function(data) {
-                StatsModel.init(data);
+            var car = CarsModel.getSelectedCar();
+            var request = { id : ''+car.id, teamid : ''+car.teamid };
+            Diffusion.session().messages.sendRequest('race', request).then(function(data) {
+                StatsModel.init(data.get());
                 $scope.data = StatsModel.getLaps();
             }, function(err) {
                 console.log(err);
             });
         }
     };
+
+    $scope.$watch(function() {
+        if (CarsModel.getSelectedCar()) {
+            return CarsModel.getSelectedCar().laps;
+        }
+        return 0;
+    }, updateStats);
+
+    $scope.$watch(function() {
+        if (CarsModel.getSelectedCar()) {
+            return CarsModel.getSelectedCar().id + ' ' + CarsModel.getSelectedCar().teamid;
+        }
+        return '0';
+    }, updateStats);
 }]);
