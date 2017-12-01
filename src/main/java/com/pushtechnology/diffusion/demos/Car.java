@@ -6,12 +6,14 @@ public class Car implements Comparable<Car> {
     private final int id;
     private final int teamId;
     private final String driverName;
-    private final double maxSpeed;
-    private final double cornering;
     private final double acceleration;
     private final double deceleration;
     private final HashSet<Double> lapTimes;
+    private final DoubleRange speedRange;
+    private final DoubleRange corneringRange;
 
+    private double maxSpeed;
+    private double cornering;
     private int lap = 1;
     private int position = 0;
     private double location = 0.0;
@@ -19,24 +21,26 @@ public class Car implements Comparable<Car> {
     private double previousLapTime = 0.0;
     private double currentLapTime = 0.0;
     private double lapDifference = 0.0;
-    private double reactionTime = 0.0;
+    private double accelerationTime = -1;
+    private double decelerationTime = -2;
     private double elapsedReactionTime = 0.0;
-    private int currentSegment = -1;
 
     public Car(
             int id,
             int teamId,
             String driverName,
-            double maxSpeed,
-            double cornering,
+            DoubleRange speedRange,
+            DoubleRange corneringRange,
             double acceleration,
             double deceleration ) {
 
         this.id = id;
         this.teamId = teamId;
         this.driverName = driverName;
-        this.maxSpeed = maxSpeed / 3.6; // km/h to m/s
-        this.cornering = cornering / 3.6; // km/h to m/s
+        this.speedRange = speedRange;
+        this.corneringRange = corneringRange;
+        this.maxSpeed = speedRange.getRandom() / 3.6; // km/h to m/s
+        this.cornering = corneringRange.getRandom() / 3.6; // km/h to m/s
         this.acceleration = acceleration;
         this.deceleration = deceleration;
 
@@ -53,44 +57,49 @@ public class Car implements Comparable<Car> {
 
     double getLocation() { return location; }
 
-    double getCornering() { return cornering; }
-
-    double getMaxSpeed() { return maxSpeed; }
-
-    double getCurrentSpeed() { return currentSpeed; }
-
-    double getAcceleration() { return acceleration; }
-
-    double getDeceleration() { return deceleration; }
-
-    int getCurrentSegment() { return currentSegment; }
-
     void setPosition(int position) {
         this.position = position;
     }
 
-    void setSegment(int segment, double reactionTime) {
-        this.currentSegment = segment;
-        this.elapsedReactionTime = 0.0;
-        this.reactionTime = reactionTime;
-    }
-
-    boolean canReact(double elapsedSeconds) {
-        if ( reactionTime > 0.0 ) {
+    void accelerate(double elapsedSeconds, double reactionTime) {
+        if ( accelerationTime == -1 && decelerationTime == -2 ) {
+            accelerationTime = reactionTime;
+            elapsedReactionTime = 0.0;
+            maxSpeed = speedRange.getRandom() / 3.6;
+        } else if ( accelerationTime > -1 ){
             elapsedReactionTime += elapsedSeconds;
-            if (elapsedReactionTime < reactionTime) {
-                return false;
-            }
-            reactionTime = 0.0;
         }
-        return true;
+
+        if ( accelerationTime == -2 || elapsedReactionTime >= accelerationTime ) {
+            currentSpeed += acceleration * elapsedSeconds;
+            if (currentSpeed > maxSpeed) {
+                // Cap to max speed
+                currentSpeed = maxSpeed;
+            }
+            elapsedReactionTime = accelerationTime;
+            accelerationTime = -2;
+            decelerationTime = -1;
+        }
     }
 
-    void accelerate(double deltaSpeed, double elapsedSeconds) {
-        currentSpeed += deltaSpeed * elapsedSeconds;
-        if (currentSpeed > maxSpeed) {
-            // Cap to max speed
-            currentSpeed = maxSpeed;
+    void decelerate(double elapsedSeconds, double reactionTime) {
+        if ( decelerationTime == -1 && accelerationTime == -2 ) {
+            decelerationTime = reactionTime;
+            elapsedReactionTime = 0.0;
+            cornering = corneringRange.getRandom() / 3.6;
+        } else if ( decelerationTime > -1 ) {
+            elapsedReactionTime += elapsedSeconds;
+        }
+
+        if ( decelerationTime == -2 || elapsedSeconds >= accelerationTime ) {
+            currentSpeed -= deceleration * elapsedSeconds;
+            if (currentSpeed < cornering) {
+                // Cap to cornering speed
+                currentSpeed = cornering;
+            }
+            elapsedReactionTime = accelerationTime;
+            decelerationTime = -2;
+            accelerationTime = -1;
         }
     }
 
@@ -105,9 +114,11 @@ public class Car implements Comparable<Car> {
             // Account for overshoot in lap times
             double overhead = ( ( location * trackLength ) / currentSpeed );
             currentLapTime -= overhead;
+
             if ( previousLapTime != 0.0 ) {
                 lapDifference = currentLapTime - previousLapTime;
             }
+
             previousLapTime = currentLapTime;
             currentLapTime = overhead;
 
@@ -135,6 +146,22 @@ public class Car implements Comparable<Car> {
                 .append(",\"td\":")
                 .append(lapDifference)
                 .append('}');
+    }
+
+    String buildLapTimeJSON() {
+        StringBuilder sb = new StringBuilder(lapTimes.size() * 10);
+        sb.append("[");
+        boolean first = true;
+        for (double time : lapTimes) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(",");
+            }
+            sb.append(time);
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
     @Override

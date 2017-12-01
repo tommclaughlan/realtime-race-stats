@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 class RaceBuilder {
-    public static RaceBuilder create() {
+    static RaceBuilder create() {
         final Randomiser randomiser;
         try {
             randomiser = new Randomiser();
@@ -167,10 +167,10 @@ class RaceBuilder {
                         iCar,
                         iTeam,
                         randomiser.getNextDriverName(),
-                        randomiser.fromRange(speedRange),
-                        randomiser.fromRange(corneringRange),
-                        randomiser.fromRange(accelerationRange),
-                        randomiser.fromRange(decelerationRange));
+                        speedRange.getVariation(2),
+                        corneringRange.getVariation(2),
+                        accelerationRange.getRandom(),
+                        decelerationRange.getRandom());
                 cars.add(car);
             }
 
@@ -244,10 +244,6 @@ class RaceBuilder {
             String name = teamNames.get(index);
             teamNames.remove(index);
             return name;
-        }
-
-        double fromRange(DoubleRange range) {
-            return random.doubles(1, range.getMin(), range.getMax()).toArray()[0];
         }
 
         int getTeamNameCount() {

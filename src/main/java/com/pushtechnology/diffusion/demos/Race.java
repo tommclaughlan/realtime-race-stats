@@ -1,7 +1,9 @@
 package com.pushtechnology.diffusion.demos;
 
 import com.pushtechnology.diffusion.client.Diffusion;
+import com.pushtechnology.diffusion.client.callbacks.ErrorReason;
 import com.pushtechnology.diffusion.client.features.TimeSeries;
+import com.pushtechnology.diffusion.client.features.control.topics.MessagingControl;
 import com.pushtechnology.diffusion.client.features.control.topics.TopicControl;
 import com.pushtechnology.diffusion.client.features.control.topics.TopicUpdateControl;
 import com.pushtechnology.diffusion.client.session.Session;
@@ -9,9 +11,11 @@ import com.pushtechnology.diffusion.client.topics.details.TopicSpecification;
 import com.pushtechnology.diffusion.client.topics.details.TopicType;
 import com.pushtechnology.diffusion.datatype.json.JSON;
 import com.pushtechnology.diffusion.datatype.json.JSONDataType;
+import com.pushtechnology.repackaged.jackson.core.JsonToken;
+import com.pushtechnology.repackaged.jackson.dataformat.cbor.CBORFactory;
+import com.pushtechnology.repackaged.jackson.dataformat.cbor.CBORParser;
 
-import java.lang.reflect.Array;
-import java.time.Instant;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -20,12 +24,7 @@ import java.util.concurrent.TimeoutException;
 import static com.pushtechnology.diffusion.datatype.DataTypes.JSON_DATATYPE_NAME;
 
 public class Race {
-    private static final Random RANDOM = new Random(Instant.now().toEpochMilli());
     private static final JSONDataType JSON_DATA_TYPE = Diffusion.dataTypes().json();
-
-    private static double getRandomFromFrange(DoubleRange range) {
-        return RANDOM.doubles(1, range.getMin(), range.getMax()).toArray()[0];
-    }
 
     private final ArrayList<Team> teams;
     private final ArrayList<Car> cars;
@@ -36,6 +35,8 @@ public class Race {
     private final String topic;
     private final TimeSeries timeSeries;
     private final DoubleRange reactionRange;
+
+    private boolean isStartOfRace = true;
 
     public Race(
             long updateFrequency,
@@ -55,13 +56,70 @@ public class Race {
 
         cars = new ArrayList<>();
         sorted = new ArrayList<>();
-        for(Team team : teams ) {
+        for (Team team : teams) {
             cars.addAll(team.getCars());
             sorted.addAll(team.getCars());
         }
 
         timeSeries = session.feature(TimeSeries.class);
+        MessagingControl messaging = session.feature(MessagingControl.class);
+
         createTopics(retainedRange);
+
+        // Prepare message request handler
+        messaging.addRequestHandler(
+                topic,
+                JSON.class,
+                JSON.class,
+                new MessagingControl.RequestHandler<JSON, JSON>() {
+                    @Override
+                    public void onRequest(JSON json, RequestContext requestContext, Responder<JSON> responder) {
+                        // Read request
+                        CBORFactory factory = new CBORFactory();
+                        CBORParser parser = null;
+                        Map<String, String> request  = new HashMap<>();
+
+                        try {
+                            parser = factory.createParser(json.asInputStream());
+
+                            if (parser.nextToken() != JsonToken.START_OBJECT) {
+                                responder.reject("Invalid request." );
+                                return;
+                            }
+
+                            while (true) {
+                                String key = parser.nextFieldName();
+
+                                if (key == null) {
+                                    break;
+                                }
+
+                                request.put(key, parser.nextTextValue());
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            responder.reject("Invalid request.");
+                            return;
+                        }
+
+                        // Parse request
+                        int id = Integer.parseUnsignedInt(request.get("id"));
+                        int teamId = Integer.parseUnsignedInt(request.get("teamid"));
+
+                        String times = teams.get(teamId).getCars().get(id).buildLapTimeJSON();
+                        responder.respond(JSON_DATA_TYPE.fromJsonString(times));
+                    }
+
+                    @Override
+                    public void onClose() {
+                        System.out.println("Closing messaging control.");
+                    }
+
+                    @Override
+                    public void onError(ErrorReason errorReason) {
+                        System.out.println("Error in messaging control: " + errorReason.toString());
+                    }
+                });
     }
 
     void start() {
@@ -79,6 +137,9 @@ public class Race {
             tick += elapsed;
 
             update(elapsed);
+            if ( isStartOfRace ) {
+                isStartOfRace = false;
+            }
 
             if ( tick >= nanoFrequency ) {
                 tick -= nanoFrequency;
@@ -101,34 +162,21 @@ public class Race {
     private void update(final long elapsed) {
         final double elapsedSeconds = ((double)elapsed / 1000000000.0);
 
-        double deltaSpeed;
-        double speedCap;
+        double carPos;
+        RaceTrack.Part currentPart;
+        RaceTrack.Part nextPart;
 
         for (Car car : cars) {
-            // Find the segment this car is in
-            int segment = raceTrack.getSegment( car );
-            if (segment != car.getCurrentSegment()) {
-                // We changed segments so perform reaction timing
-                car.setSegment(segment, getRandomFromFrange(reactionRange));
-            }
+            currentPart = raceTrack.getPart(car);
+            nextPart = raceTrack.getNextPart(currentPart.getId());
+            carPos = car.getLocation() * raceTrack.getLength();
 
-            // Is car in a corner?
-            if (raceTrack.isCornerSegment(car.getCurrentSegment())) {
-                speedCap = car.getCornering();
+            if (nextPart.isCurved() && carPos >= nextPart.getLocation() - 30) {
+                car.decelerate(elapsedSeconds, reactionRange.getRandom());
+            } else if ( currentPart.isCurved() && carPos <= nextPart.getLocation() - 30 ) {
+                car.decelerate(elapsedSeconds, reactionRange.getRandom());
             } else {
-                speedCap = car.getMaxSpeed();
-            }
-
-            if (car.canReact(elapsedSeconds)) {
-                // Is car accelerating or decelerating?
-                if ( speedCap - car.getCurrentSpeed() < 0.0 ) {
-                    deltaSpeed = -car.getDeceleration();
-                } else {
-                    deltaSpeed = car.getAcceleration();
-                }
-
-                // Move the car ahead
-                car.accelerate(deltaSpeed, elapsedSeconds);
+                car.accelerate(elapsedSeconds, reactionRange.getRandom());
             }
 
             car.move(raceTrack.getLength(), elapsedSeconds);
