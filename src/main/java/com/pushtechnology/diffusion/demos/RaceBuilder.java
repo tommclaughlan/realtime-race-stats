@@ -161,21 +161,16 @@ class RaceBuilder {
         ArrayList<Team> teams = new ArrayList<>(teamCount);
         for (int iTeam = 0; iTeam < teamCount; iTeam += 1) {
 
-            DoubleRange teamSpeedRange = speedRange.getVariation(2);
-            DoubleRange teamCorneringRange = corneringRange.getVariation(2);
-            double teamAcceleration = accelerationRange.getRandom();
-            double teamDeceleration = decelerationRange.getRandom();
-
             ArrayList<Car> cars = new ArrayList<>(carCount);
             for (int iCar = 0; iCar < carCount; iCar += 1) {
                 Car car = new Car(
                         iCar,
                         iTeam,
                         randomiser.getNextDriverName(),
-                        teamSpeedRange,
-                        teamCorneringRange,
-                        teamAcceleration,
-                        teamDeceleration);
+                        speedRange.getVariation(2),
+                        corneringRange.getVariation(2),
+                        accelerationRange.getRandom(),
+                        decelerationRange.getRandom());
                 cars.add(car);
             }
 
