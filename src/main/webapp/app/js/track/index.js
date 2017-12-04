@@ -29,8 +29,8 @@ app.directive('track', function() {
                 var width = maxX - minX;
                 var height = maxY - minY;
                 if (width > 0 && height > 0) {
-                    ctx.canvas.width = width * 1.2;
-                    ctx.canvas.height = height * 1.2;
+                    ctx.canvas.width = width * 1.1;
+                    ctx.canvas.height = height * 1.3;
                 }
             };
 
@@ -44,8 +44,8 @@ app.directive('track', function() {
                 var p = new Path2D(path);
                 ctx.stroke(p);
 
-                if (times < 5) {
-                    setBoundingBox(ctx);
+                if (times < 4) {
+                    setBoundingBox(ctx, 15);
                     times++;
                 }
 

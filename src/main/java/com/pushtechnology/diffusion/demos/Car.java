@@ -62,11 +62,18 @@ public class Car implements Comparable<Car> {
         this.position = position;
     }
 
+    private double offsetSpeed(double speed) {
+        if (lap <= 5) {
+            return speed * (0.65 + ((lap / 5.0) * 0.15));
+        }
+        return speed;
+    }
+
     void accelerate(double elapsedSeconds, double reactionTime) {
         if ( accelerationTime == -1 && decelerationTime == -2 ) {
             accelerationTime = reactionTime;
             elapsedReactionTime = 0.0;
-            maxSpeed = speedRange.getRandom() / 3.6;
+            maxSpeed = offsetSpeed(speedRange.getRandom() / 3.6);
         } else if ( accelerationTime > -1 ){
             elapsedReactionTime += elapsedSeconds;
         }
@@ -87,7 +94,7 @@ public class Car implements Comparable<Car> {
         if ( decelerationTime == -1 && accelerationTime == -2 ) {
             decelerationTime = reactionTime;
             elapsedReactionTime = 0.0;
-            cornering = corneringRange.getRandom() / 3.6;
+            cornering = offsetSpeed(corneringRange.getRandom() / 3.6);
         } else if ( decelerationTime > -1 ) {
             elapsedReactionTime += elapsedSeconds;
         }

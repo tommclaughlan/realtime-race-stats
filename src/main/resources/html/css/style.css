@@ -163,3 +163,11 @@ canvas {
 .nvd3 .nv-groups path.nv-line {
     stroke-width: 2;
 }
+
+.btn-link {
+    color: #f15500;
+}
+
+.btn-link:hover, active, focus {
+    color: #f47700;
+}

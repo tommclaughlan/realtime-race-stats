@@ -5,7 +5,7 @@ app.factory('StatsModel', function() {
         options : {
                     "chart": {
                       "type": "lineChart",
-                      "height": 300,
+                      "height": 280,
                       "margin": {
                         "top": 20,
                         "right": 20,
