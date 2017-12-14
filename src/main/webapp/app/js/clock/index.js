@@ -92,7 +92,7 @@ app.controller('ClockController', ['$scope', '$interval', 'ClockModel', 'Diffusi
                 ClockModel.setLive(false);
                 ClockModel.setPaused(true);
             },
-            step : 10,
+            step : 50,
             translate : function(value) {
                 var date = new Date(value);
                 return date.toLocaleTimeString();

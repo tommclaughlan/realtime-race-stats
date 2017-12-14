@@ -9,6 +9,7 @@ app.directive('track', function() {
         },
         link : function(scope, elem, attrs) {
             var times = 0;
+
             var setBoundingBox = function(ctx,alphaThreshold){
                 if (alphaThreshold===undefined) alphaThreshold = 15;
                 var minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
@@ -29,7 +30,7 @@ app.directive('track', function() {
                 var width = maxX - minX;
                 var height = maxY - minY;
                 if (width > 0 && height > 0) {
-                    ctx.canvas.width = width * 1.1;
+                    ctx.canvas.width = width * 1.2;
                     ctx.canvas.height = height * 1.3;
                 }
             };

@@ -4,6 +4,7 @@ var browserify = require('browserify'),
     uglify = require('gulp-uglify'),
     connect = require('gulp-connect'),
     source = require('vinyl-source-stream'),
+    buffer = require('vinyl-buffer'),
     gulp = require('gulp');
 
 var paths = {
@@ -18,16 +19,10 @@ gulp.task('browserify', function () {
   return browserify(paths.src + 'app.js', {debug: true})
   .bundle()
   .pipe(source('bundle.js'))
+  .pipe(buffer())
+  .pipe(uglify())
   .pipe(gulp.dest(paths.dist))
   .pipe(connect.reload());
-});
-
-gulp.task('browserify-min', ['ngAnnotate'], function () {
-  return browserify(paths.root + 'ngAnnotate/app.js')
-  .bundle()
-  .pipe(source('app.min.js'))
-  .pipe(streamify(uglify({mangle: false})))
-  .pipe(gulp.dest(paths.dist));
 });
 
 gulp.task('watch', ['browserify'], function () {

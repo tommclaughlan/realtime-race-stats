@@ -1,5 +1,7 @@
 var app = require('angular').module('racing');
 
+var diffusion = require('diffusion');
+
 app.factory('Diffusion', ['$state', function($state) {
     var Diffusion = {
         _session : null

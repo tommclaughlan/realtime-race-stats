@@ -60,6 +60,9 @@
                             <directory>src/main/webapp/node_modules</directory>
                         </fileset>
                         <fileset>
+                            <directory>src/main/webapp/node</directory>
+                        </fileset>
+                        <fileset>
                             <directory>src/main/resources/html</directory>
                             <includes>
                                 <include>bundle.js</include>
