@@ -27,6 +27,7 @@ import static com.pushtechnology.diffusion.datatype.DataTypes.JSON_DATATYPE_NAME
 import static spark.Spark.externalStaticFileLocation;
 import static spark.Spark.init;
 import static spark.Spark.port;
+import static spark.Spark.staticFileLocation;
 
 /**
  * Main class to handle initialisation and stuff.
@@ -78,7 +79,7 @@ public class Main {
 
     private static void startWebServer() {
         port(3142);
-        externalStaticFileLocation("src/main/resources/html");
+        staticFileLocation("html");
         init();
     }
 }

@@ -5,6 +5,7 @@ import com.pushtechnology.diffusion.client.session.Session;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Random;
@@ -204,9 +205,9 @@ class RaceBuilder {
 
     private static class Randomiser {
         private void readNames(String filename, ArrayList<String> list) throws IOException {
-            ClassLoader classLoader = getClass().getClassLoader();
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-            try (BufferedReader br = new BufferedReader(new FileReader(classLoader.getResource(filename).getFile()))) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(classLoader.getResourceAsStream(filename)))) {
                 String line = br.readLine();
 
                 while (line != null) {
