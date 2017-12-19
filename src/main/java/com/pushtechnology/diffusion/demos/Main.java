@@ -36,14 +36,6 @@ import static spark.Spark.staticFileLocation;
  */
 public class Main {
     public static void main(String[] args) {
-        // Load properties
-        RaceProperties properties = RaceProperties.load();
-        if (properties == null) {
-            System.out.println("ERROR: No properties loaded!");
-            System.exit(42);
-            return;
-        }
-
         // Start web server
         startWebServer();
 
@@ -54,19 +46,10 @@ public class Main {
 
         // Load the race
         Race race = RaceBuilder.create()
+                .fromProperties()
                 .setDiffusionSession(session)
-                .setTopic(properties.getTopic())
-                .setRetainedRange(properties.getRetainedRange())
-                .setRaceTrack(properties.getTrack())
-                .setTeamCount(properties.getTeamCount())
-                .setCarCount(properties.getCarCount())
-                .setUpdateFrequency(properties.getUpdateFrequency())
-                .setSpeedRange(properties.getSpeed())
-                .setCorneringRange(properties.getCornering())
-                .setAccelerationRange(properties.getAcceleration())
-                .setDecelerationRange(properties.getDeceleration())
-                .setReactionRange(properties.getReaction())
                 .Build();
+
         if (race == null) {
             System.out.println("ERROR: Failed to create race!");
             System.exit(42);
