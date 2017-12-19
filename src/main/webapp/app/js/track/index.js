@@ -1,3 +1,4 @@
+'use strict';
 
 var app = require('angular').module('racing');
 
@@ -8,10 +9,15 @@ app.directive('track', function() {
             drawables : '@drawables'
         },
         link : function(scope, elem, attrs) {
-            var times = 0;
+            var done = false;
+            var xtrans = 0, ytrans = 0;
+            var lineWidth = 40;
+            var buffer = 16;
 
             var setBoundingBox = function(ctx,alphaThreshold){
-                if (alphaThreshold===undefined) alphaThreshold = 15;
+                if (alphaThreshold===undefined) {
+                    alphaThreshold = 15;
+                }
                 var minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
                 var w=ctx.canvas.width,h=ctx.canvas.height;
                 var data = ctx.getImageData(0,0,w,h).data;
@@ -19,10 +25,18 @@ app.directive('track', function() {
                     for (var y=0;y<h;++y){
                         var a = data[(w*y+x)*4+3];
                         if (a>alphaThreshold){
-                            if (x>maxX) maxX=x;
-                            if (x<minX) minX=x;
-                            if (y>maxY) maxY=y;
-                            if (y<minY) minY=y;
+                            if (x>maxX) {
+                                maxX=x;
+                            }
+                            if (x<minX) {
+                                minX=x;
+                            }
+                            if (y>maxY) {
+                                maxY=y;
+                            }
+                            if (y<minY) {
+                                minY=y;
+                            }
                         }
                     }
                 }
@@ -30,28 +44,34 @@ app.directive('track', function() {
                 var width = maxX - minX;
                 var height = maxY - minY;
                 if (width > 0 && height > 0) {
-                    ctx.canvas.width = width * 1.2;
-                    ctx.canvas.height = height * 1.3;
+                    ctx.canvas.width = width + (2 * (lineWidth + buffer));
+                    ctx.canvas.height = height + (2 * (lineWidth + buffer));
+                    done = true;
+
+                    xtrans = (lineWidth + buffer) - minX;
+                    ytrans = (lineWidth + buffer) - minY;
                 }
+
             };
 
             var draw = function(drawables) {
                 drawables = JSON.parse(drawables);
                 var path = drawables.path;
                 var ctx = elem[0].getContext('2d');
+                ctx.save();
 
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.clearRect(-50, -50, ctx.canvas.width + 50, ctx.canvas.height + 50);
 
                 var p = new Path2D(path);
+                ctx.translate(xtrans, ytrans);
                 ctx.stroke(p);
 
-                if (times < 4) {
+                if (!done) {
                     setBoundingBox(ctx, 15);
-                    times++;
                 }
 
                 ctx.strokeStyle = '#aaa';
-                ctx.lineWidth = 40;
+                ctx.lineWidth = lineWidth;
                 ctx.stroke(p);
 
                 var line = drawables.startingLine;
@@ -77,11 +97,12 @@ app.directive('track', function() {
                     }
                     ctx.stroke();
                 });
+                ctx.restore();
             };
 
             attrs.$observe('drawables', draw);
         }
-    }
+    };
 });
 
 app.factory('TrackModel', ['$http', function($http) {

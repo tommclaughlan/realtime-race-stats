@@ -1,3 +1,5 @@
+'use strict';
+
 var app = require('angular').module('racing');
 
 app.factory('CarsModel', ['Diffusion', 'TrackModel', function(Diffusion, TrackModel) {

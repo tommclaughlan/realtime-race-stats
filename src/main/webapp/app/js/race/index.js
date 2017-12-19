@@ -1,3 +1,5 @@
+'use strict';
+
 var app = require('angular').module('racing');
 
 app.directive('raceMap', function() {

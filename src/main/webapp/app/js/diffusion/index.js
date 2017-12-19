@@ -1,3 +1,5 @@
+'use strict';
+
 var app = require('angular').module('racing');
 
 var diffusion = require('diffusion');

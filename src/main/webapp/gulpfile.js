@@ -1,10 +1,8 @@
+'use strict';
+
 var browserify = require('browserify'),
-    glob = require('glob'),
-    streamify = require('gulp-streamify'),
-    uglify = require('gulp-uglify'),
     connect = require('gulp-connect'),
     source = require('vinyl-source-stream'),
-    buffer = require('vinyl-buffer'),
     gulp = require('gulp');
 
 var paths = {
@@ -13,14 +11,10 @@ var paths = {
     dist : '../resources/html/'
 };
 
-var liveReload = true;
-
 gulp.task('browserify', function () {
-  return browserify(paths.src + 'app.js', {debug: true})
+  return browserify(paths.src + 'app.js', {debug: false})
   .bundle()
   .pipe(source('bundle.js'))
-  .pipe(buffer())
-  .pipe(uglify())
   .pipe(gulp.dest(paths.dist))
   .pipe(connect.reload());
 });

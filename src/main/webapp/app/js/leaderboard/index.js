@@ -1,3 +1,5 @@
+'use strict';
+
 var app = require('angular').module('racing');
 
 app.controller('LeaderboardController', ['$scope', 'CarsModel', function($scope, CarsModel) {
@@ -19,7 +21,9 @@ app.controller('LeaderboardController', ['$scope', 'CarsModel', function($scope,
 
     $scope.selectedCar = function(car, team) {
         var selected = CarsModel.getSelectedCar();
-        if (!selected) return false;
+        if (!selected) {
+            return false;
+        }
         return selected.id === car && selected.teamid === team;
     };
 

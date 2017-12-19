@@ -79,7 +79,8 @@ public class Main {
 
     private static void startWebServer() {
         port(3142);
-        staticFileLocation("html");
+//        staticFileLocation("html");
+        externalStaticFileLocation("src/main/resources/html");
         init();
     }
 }

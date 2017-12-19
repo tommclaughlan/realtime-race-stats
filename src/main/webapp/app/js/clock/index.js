@@ -1,3 +1,5 @@
+'use strict';
+
 var app = require('angular').module('racing');
 
 app.factory('ClockModel', function() {
@@ -81,7 +83,7 @@ app.controller('ClockController', ['$scope', '$interval', 'ClockModel', 'Diffusi
         ClockModel.togglePause();
         ClockModel.setPlayback(!ClockModel.isPaused());
         ClockModel.setLive(false);
-    }
+    };
 
     $scope.slider = {
         value : 1,
@@ -134,7 +136,7 @@ app.controller('ClockController', ['$scope', '$interval', 'ClockModel', 'Diffusi
     $scope.$watch(function() {
         return ClockModel.getStartTime() + ' ' + ClockModel.getLiveTime();
     }, function() {
-        $scope.slider.options.floor = ClockModel.getStartTime(),
+        $scope.slider.options.floor = ClockModel.getStartTime();
         $scope.slider.options.ceil = ClockModel.getLiveTime();
 
         if (!ClockModel.isLive() && $scope.slider.value < ClockModel.getStartTime()) {
