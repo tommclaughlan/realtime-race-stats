@@ -11,20 +11,20 @@ import java.util.Objects;
 public class RaceTrack {
     private static Part loadPart(int index, JsonParser parser, double location) throws IOException {
         if (parser.nextToken() != JsonToken.FIELD_NAME) {
-            throw new IllegalArgumentException(); // TODO: throw something else
+            throw new IOException( "Field name expected.");
         }
         if (!Objects.equals(parser.getCurrentName(), "length")) {
-            throw new IllegalArgumentException(); // TODO: throw something else
+            throw new IOException("length field expected.");
         }
 
         parser.nextToken();
         double length = parser.getDoubleValue();
 
         if (parser.nextToken() != JsonToken.FIELD_NAME) {
-            throw new IllegalArgumentException(); // TODO: throw something else
+            throw new IOException("Field name expected.");
         }
         if (!Objects.equals(parser.getCurrentName(), "type")) {
-            throw new IllegalArgumentException(); // TODO: throw something else
+            throw new IOException("type field expected.");
         }
 
         parser.nextToken();
@@ -35,10 +35,10 @@ public class RaceTrack {
         } else if (Objects.equals(val, "c")) {
             type = Part.TYPE.CURVED;
         } else {
-            throw new IllegalArgumentException(); // TODO: throw something else
+            throw new IOException("Invalid part type detected.");
         }
         if (parser.nextToken() != JsonToken.END_OBJECT) {
-            throw new IllegalArgumentException(); // TODO: throw something else
+            throw new IOException("Expected object to end.");
         }
 
         return new Part(index, type, length, location);
@@ -57,7 +57,7 @@ public class RaceTrack {
                 if (Objects.equals(parser.getCurrentName(), "parts")) {
                     // We found parts so load them
                     if (parser.nextToken() != JsonToken.START_ARRAY) {
-                        throw new IllegalArgumentException(); // TODO: throw something else
+                        throw new IOException("Array expected.");
                     }
                     int index = 0;
                     while (parser.nextToken() == JsonToken.START_OBJECT) {
@@ -71,7 +71,6 @@ public class RaceTrack {
             }
         }
 
-        System.out.println("Track length: " + len);
         length = len;
         trackFile = filename;
     }

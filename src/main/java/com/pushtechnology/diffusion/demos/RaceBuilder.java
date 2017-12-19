@@ -2,12 +2,10 @@ package com.pushtechnology.diffusion.demos;
 
 import com.pushtechnology.diffusion.client.session.Session;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -44,39 +42,67 @@ class RaceBuilder {
         this.randomiser = randomiser;
     }
 
-    RaceBuilder setRaceTrack(String filename) {
-        if (filename == null) {
-            throw new IllegalArgumentException("No track file specified.");
+    RaceBuilder fromProperties() {
+        Properties properties = new Properties();
+        InputStream inputStream = null;
+
+        try {
+            String filename = "config/startup.properties";
+            inputStream = Main.class.getClassLoader().getResourceAsStream(filename);
+            if (inputStream == null) {
+                System.out.println("Unable to find " + filename);
+                return null;
+            }
+            properties.load(inputStream);
+
+            trackFilename = readString(properties, "track"); // Read race track file
+            teamCount = readUnsignedInteger(properties, "teams"); // Read number of teams
+            carCount = readUnsignedInteger(properties, "cars"); // Read number of cars per team
+            updateFrequency = readUnsignedLong(properties, "updatefreq"); // Read update frequency in milliseconds
+            topic = readString(properties, "topic"); // Read topic
+            retainedRange = readString(properties, "retainedrange"); // Read retained range for time series topics
+            speedRange = readDoubleRange(properties, "minspeed", "maxspeed");  // Read speed range
+            corneringRange = readDoubleRange(properties, "mincornering", "maxcornering");  // Read cornering range
+            accelerationRange = readDoubleRange(properties, "minacceleration", "maxacceleration");  // Read acceleration range
+            decelerationRange = readDoubleRange(properties, "mindeceleration", "maxdeceleration");  // Read deceleration range
+            reactionRange = readDoubleRange(properties, "minreaction", "maxreaction");  // Read reaction range
+
+            return this;
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
-        trackFilename = filename;
-        return this;
     }
 
-    RaceBuilder setTeamCount(int count) {
-        if (count < 1) {
-            throw new IllegalArgumentException("Need at least 1 team.");
+    private static String readString(Properties properties, String name) throws IOException {
+        String value = properties.getProperty(name);
+        if ( value == null ) {
+            throw new IOException( "Property '" + name + "' not defined." );
         }
-        if (count > randomiser.getTeamNameCount()) {
-            throw new IllegalArgumentException("Not enough team names provided.");
-        }
-        teamCount = count;
-        return this;
+        return value;
     }
 
-    RaceBuilder setCarCount(int count) {
-        if (count < 1) {
-            throw new IllegalArgumentException("Need at least 1 car per team.");
-        }
-        carCount = count;
-        return this;
+    private static Integer readUnsignedInteger(Properties properties, String name) throws IOException {
+        return Integer.parseUnsignedInt(readString(properties, name));
     }
 
-    RaceBuilder setUpdateFrequency(long frequency) {
-        if (frequency < 1) {
-            throw new IllegalArgumentException("Minimum update frequency is 1ms.");
-        }
-        updateFrequency = frequency;
-        return this;
+    private static Long readUnsignedLong(Properties properties, String name) throws IOException {
+        return Long.parseUnsignedLong(readString(properties, name));
+    }
+
+    private static DoubleRange readDoubleRange(Properties properties, String minName, String maxName) throws IOException {
+        return new DoubleRange(
+                Double.parseDouble(readString(properties, minName)),
+                Double.parseDouble(readString(properties, maxName)));
     }
 
     RaceBuilder setDiffusionSession(Session session) {
@@ -87,76 +113,21 @@ class RaceBuilder {
         return this;
     }
 
-    RaceBuilder setTopic(String topic) {
+    public Race Build() {
+        if (teamCount < 1) {
+            throw new IllegalArgumentException("Need at least 1 team.");
+        }
+        if (teamCount > randomiser.getTeamNameCount()) {
+            throw new IllegalArgumentException("Not enough team names provided.");
+        }
+        if (carCount < 1) {
+            throw new IllegalArgumentException("Need at least 1 car per team.");
+        }
+        if (updateFrequency < 1) {
+            throw new IllegalArgumentException("Minimum update frequency is 1ms.");
+        }
         if (topic == null) {
             throw new IllegalArgumentException("Topic can't be null");
-        }
-        this.topic = topic;
-        return this;
-    }
-
-    RaceBuilder setRetainedRange(String retainedRange) {
-        if (retainedRange == null) {
-            throw new IllegalArgumentException("Retained DoubleRange can't be null.");
-        }
-        this.retainedRange = retainedRange;
-        return this;
-    }
-
-    RaceBuilder setSpeedRange(DoubleRange range) {
-        if (range == null) {
-            throw new IllegalArgumentException("Speed range can't be null.");
-        }
-        this.speedRange = range;
-        return this;
-    }
-
-    RaceBuilder setCorneringRange(DoubleRange range) {
-        if (range == null) {
-            throw new IllegalArgumentException("Cornering range can't be null.");
-        }
-        this.corneringRange = range;
-        return this;
-    }
-
-    RaceBuilder setAccelerationRange(DoubleRange range) {
-        if (range == null) {
-            throw new IllegalArgumentException("Acceleration range can't be null.");
-        }
-        this.accelerationRange = range;
-        return this;
-    }
-
-    RaceBuilder setDecelerationRange(DoubleRange range) {
-        if (range == null) {
-            throw new IllegalArgumentException("Deceleration range can't be null.");
-        }
-        this.decelerationRange = range;
-        return this;
-    }
-
-    RaceBuilder setReactionRange(DoubleRange range) {
-        if (range == null) {
-            throw new IllegalArgumentException("Reaction range can't be null.");
-        }
-        this.reactionRange = range;
-        return this;
-    }
-
-    public Race Build() {
-        if (updateFrequency <= 0
-                || teamCount <= 0
-                || carCount <= 0
-                || trackFilename == null
-                || session == null
-                || topic == null
-                || retainedRange == null
-                || speedRange == null
-                || corneringRange == null
-                || accelerationRange == null
-                || decelerationRange == null
-                || reactionRange == null) {
-            return null;
         }
 
         ArrayList<Team> teams = new ArrayList<>(teamCount);
